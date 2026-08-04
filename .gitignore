@@ -1,0 +1,74 @@
+# Private planning and agent workflow
+docs/planning/
+docs/dataset_selection/
+docs/requirements/
+docs/internal/
+docs/private/
+.cursor/
+.claude/
+.agents/
+agent-transcripts/
+prompts/
+scripts/feasibility/
+AGENTS.md
+CLAUDE.md
+*.prompt.md
+
+# Local configuration and secrets
+.env
+.env.*
+!.env.example
+*.local
+*.local.*
+config.local.*
+*.pem
+*.key
+
+# Python caches and tooling
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+.ipynb_checkpoints/
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Raw neural data and local dataset caches
+data/
+datasets/
+dataset_cache/
+*.nwb
+*.h5
+*.hdf5
+
+# Large model and deployment artifacts
+checkpoints/
+weights/
+*.pt
+*.pth
+*.ckpt
+*.onnx
+*.engine
+
+# Temporary files and logs
+cache/
+tmp/
+temp/
+*.tmp
+*.log
+
+# IDE and operating-system files
+.vscode/
+.idea/
+Thumbs.db
+Desktop.ini
+.DS_Store
