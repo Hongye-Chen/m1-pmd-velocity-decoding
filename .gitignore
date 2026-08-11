@@ -21,6 +21,8 @@ CLAUDE.md
 *.local
 *.local.*
 config.local.*
+configs/local.yaml
+configs/*.local.yaml
 *.pem
 *.key
 
@@ -46,6 +48,7 @@ ENV/
 data/
 datasets/
 dataset_cache/
+feature_cache/
 *.nwb
 *.h5
 *.hdf5
@@ -59,8 +62,20 @@ weights/
 *.onnx
 *.engine
 
+# Bulk generated arrays and intermediate artifacts.
+# Compact machine-readable results such as JSON, CSV, and figures stay eligible.
+results/cache/
+*.npy
+*.npz
+*.pkl
+*.pickle
+*.joblib
+*.parquet
+*.feather
+
 # Temporary files and logs
 cache/
+logs/
 tmp/
 temp/
 *.tmp

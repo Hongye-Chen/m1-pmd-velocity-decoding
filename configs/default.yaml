@@ -1,0 +1,18 @@
+# Default project configuration.
+#
+# This file is tracked and must stay free of machine-specific values. Put local
+# paths in configs/local.yaml, which is untracked. See README.md.
+
+paths:
+  # Absolute path to the session NWB recording, which lives outside the repository.
+  # Provide it through configs/local.yaml or NEURAL_DECODING_NWB_FILE.
+  nwb_file: null
+
+  # Output locations, resolved relative to the repository root when not absolute.
+  results_dir: results
+  reports_dir: reports
+  log_dir: logs
+
+run:
+  seed: 42
+  log_level: INFO

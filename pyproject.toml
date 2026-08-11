@@ -1,0 +1,9 @@
+# Tool configuration only. The project is used in place from the repository root
+# inside the existing `BCI` conda environment and is deliberately not installable,
+# so there is no [project] or [build-system] table here.
+
+[tool.pytest.ini_options]
+minversion = "7.0"
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = "-ra"
