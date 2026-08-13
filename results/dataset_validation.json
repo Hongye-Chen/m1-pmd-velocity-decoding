@@ -1,0 +1,222 @@
+{
+  "generated_at": "2026-08-11T09:49:13+00:00",
+  "dataset": {
+    "dandiset_id": "000688",
+    "version": "0.250122.1735",
+    "subject_id": "T",
+    "session_identifier": "414c4cdb-5d05-4962-8175-89ca00ec9237",
+    "session_description": "Monkey T performing random target reaching task.",
+    "session_start_time": "2013-09-06T10:19:07.391000-04:00"
+  },
+  "file": {
+    "name": "sub-T_ses-RT-20130906_behavior+ecephys.nwb",
+    "size_bytes": 41528428,
+    "sha256": "83befb05b5d265c92e03c544c420e2bc0b6c7d3248fa14492c17f39a8aa1f124"
+  },
+  "units": {
+    "total": 53,
+    "by_area": {
+      "M1": 12,
+      "PMd": 41
+    }
+  },
+  "behavior": {
+    "samples": 107316,
+    "start_s": 0.02,
+    "end_s": 1073.17,
+    "duration_s": 1073.15,
+    "median_step_s": 0.009999999999990905,
+    "sampling_rate_hz": 100.00000000009095,
+    "series_sharing_timebase": [
+      "cursor_pos",
+      "cursor_vel",
+      "cursor_acc"
+    ]
+  },
+  "spikes": {
+    "raw": 310001,
+    "trimmed": 309719,
+    "removed_before_start": 5,
+    "removed_after_end": 277,
+    "behavior_interval_s": [
+      0.02,
+      1073.17
+    ],
+    "neural_interval_s": [
+      0.00016666666666666666,
+      1074.8857333333333
+    ],
+    "common_interval_s": [
+      0.02,
+      1073.17
+    ]
+  },
+  "trials": {
+    "total": 216,
+    "eligible": 176,
+    "excluded_rows": [
+      109,
+      189
+    ],
+    "split_row_ranges": {
+      "train": [
+        0,
+        150
+      ],
+      "validation": [
+        151,
+        182
+      ],
+      "test": [
+        183,
+        215
+      ]
+    },
+    "assigned_by_split": {
+      "train": 151,
+      "validation": 32,
+      "test": 33
+    },
+    "retained_by_split": {
+      "train": 123,
+      "validation": 24,
+      "test": 29
+    },
+    "rule_pass_counts": {
+      "is_reward": 196,
+      "has_required_attempts": 179,
+      "has_required_finite_cues": 179,
+      "cues_within_trial_bounds": 179,
+      "is_not_excluded_row": 214
+    }
+  },
+  "checks": [
+    {
+      "name": "file size matches the selected asset",
+      "passed": true,
+      "detail": "41528428 bytes"
+    },
+    {
+      "name": "file SHA-256 matches the selected asset",
+      "passed": true,
+      "detail": "83befb05b5d265c92e03c544c420e2bc0b6c7d3248fa14492c17f39a8aa1f124"
+    },
+    {
+      "name": "sorted unit count",
+      "passed": true,
+      "detail": "53 units (expected 53)"
+    },
+    {
+      "name": "units per cortical area",
+      "passed": true,
+      "detail": "{'M1': 12, 'PMd': 41} (expected {'M1': 12, 'PMd': 41})"
+    },
+    {
+      "name": "unit order is stable and contiguous",
+      "passed": true,
+      "detail": "rows 0..52"
+    },
+    {
+      "name": "behavior sample count",
+      "passed": true,
+      "detail": "107316 samples (expected 107316)"
+    },
+    {
+      "name": "behavior timestamps are finite",
+      "passed": true,
+      "detail": "[0.020, 1073.170] s"
+    },
+    {
+      "name": "behavior timestamps strictly increase",
+      "passed": true,
+      "detail": "median step 0.010000 s"
+    },
+    {
+      "name": "cursor series share one timebase",
+      "passed": true,
+      "detail": "cursor_pos, cursor_vel, cursor_acc"
+    },
+    {
+      "name": "cursor position shape",
+      "passed": true,
+      "detail": "(107316, 2)"
+    },
+    {
+      "name": "cursor position values are finite",
+      "passed": true,
+      "detail": "0 non-finite values"
+    },
+    {
+      "name": "cursor velocity shape",
+      "passed": true,
+      "detail": "(107316, 2)"
+    },
+    {
+      "name": "cursor velocity values are finite",
+      "passed": true,
+      "detail": "0 non-finite values"
+    },
+    {
+      "name": "spike times are finite",
+      "passed": true,
+      "detail": "309719 spikes retained"
+    },
+    {
+      "name": "spike times are ordered within each unit",
+      "passed": true,
+      "detail": "53 units checked"
+    },
+    {
+      "name": "trimmed spikes lie inside the common interval",
+      "passed": true,
+      "detail": "[0.020, 1073.170] s"
+    },
+    {
+      "name": "trimming removed the documented neural margins",
+      "passed": true,
+      "detail": "5 before start and 277 after end (expected 5 and 277)"
+    },
+    {
+      "name": "trial count",
+      "passed": true,
+      "detail": "216 trials (expected 216)"
+    },
+    {
+      "name": "trial identifiers match their original rows",
+      "passed": true,
+      "detail": "NWB trial ids equal zero-based row numbers"
+    },
+    {
+      "name": "splits are disjoint and cover every trial row",
+      "passed": true,
+      "detail": "216 rows across 3 splits"
+    },
+    {
+      "name": "split labels follow the original trial rows",
+      "passed": true,
+      "detail": "no trial was relabelled by filtering"
+    },
+    {
+      "name": "retained trials per split",
+      "passed": true,
+      "detail": "{'train': 123, 'validation': 24, 'test': 29} (expected {'train': 123, 'validation': 24, 'test': 29})"
+    },
+    {
+      "name": "frozen artifact rows are excluded",
+      "passed": true,
+      "detail": "rows [109, 189] are not retained"
+    },
+    {
+      "name": "manifests written",
+      "passed": true,
+      "detail": "53 unit rows and 216 trial rows"
+    }
+  ],
+  "all_checks_passed": true,
+  "artifacts": {
+    "unit_manifest": "results/manifests/units.csv",
+    "trial_manifest": "results/manifests/trials.csv",
+    "summary_json": "results/dataset_validation.json",
+    "summary_markdown": "results/dataset_validation.md"
+  }
+}

@@ -71,17 +71,34 @@ a dependency cannot be imported. A version that only differs from its pin is
 reported without failing, because the environment is shared and is not modified to
 satisfy this check.
 
+## Validate the recording
+
+```powershell
+python -m scripts.validate_dataset
+```
+
+This verifies the configured file against the frozen dataset decision, then writes
+the unit manifest, the trial and split manifest, and a validation summary under
+`results/`. It checks the file size and SHA-256, the sorted unit count and cortical
+area assignment, the cursor timebase and sample count, spike trimming to the common
+neural-behavioral interval, and the trial split and eligibility counts. It exits 1
+if a check fails and 2 if the recording is not configured or is a different file.
+
 ## Run the tests
 
 ```powershell
 pytest
 ```
 
+The test suite is deliberately independent of the recording, so it runs in seconds
+without the data present. Checks that need the actual file live in the validation
+command above.
+
 ## Repository layout
 
 | Path | Contents |
 | --- | --- |
-| `neural_decoding/` | Reusable package: configuration, logging, seeding |
+| `neural_decoding/` | Reusable package: configuration, logging, seeding, session loading, trial splits |
 | `configs/` | Tracked defaults, plus an untracked local override for paths |
 | `scripts/` | Runnable entry points, invoked as `python -m scripts.<name>` |
 | `tests/` | Automated tests, run with `pytest` |
