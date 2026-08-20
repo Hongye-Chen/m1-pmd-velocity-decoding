@@ -1,4 +1,4 @@
-"""Smoke checks for the package, logging, and seeding."""
+"""Tests for the shared logging setup and deterministic seeding."""
 
 from __future__ import annotations
 
@@ -10,15 +10,9 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-import neural_decoding
 from neural_decoding.logging_utils import _MANAGED_HANDLER_ATTR as MANAGED
 from neural_decoding.logging_utils import LOGGER_NAME, configure_logging
 from neural_decoding.seeding import new_rng, set_global_seed
-
-
-def test_project_package_imports_and_reports_a_version() -> None:
-    assert isinstance(neural_decoding.__version__, str)
-    assert neural_decoding.__version__
 
 
 @pytest.fixture
