@@ -65,6 +65,7 @@ weights/
 # Bulk generated arrays and intermediate artifacts.
 # Compact machine-readable results such as JSON, CSV, and figures stay eligible.
 results/cache/
+results/features/
 *.npy
 *.npz
 *.pkl

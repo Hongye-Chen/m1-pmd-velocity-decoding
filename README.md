@@ -84,6 +84,20 @@ area assignment, the cursor timebase and sample count, spike trimming to the com
 neural-behavioral interval, and the trial split and eligibility counts. It exits 1
 if a check fails and 2 if the recording is not configured or is a different file.
 
+## Build the causal features
+
+```powershell
+python -m scripts.build_features
+```
+
+This builds the training and validation samples, fits normalization on the training
+split alone, and writes the feature arrays, the fitted normalization, and the
+per-sample manifests. Each sample pairs 200 ms of causal spike history, as four
+chronological half-open 50 ms bins across all 53 units, with the cursor velocity
+100 ms after the reference time, and both the history and the target are required to
+lie inside a single trial. The command then validates the produced arrays against
+that protocol and exits 1 if a check fails. The held-out split is not built.
+
 ## Run the tests
 
 ```powershell

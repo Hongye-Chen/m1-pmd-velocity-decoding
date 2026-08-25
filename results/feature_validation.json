@@ -1,0 +1,279 @@
+{
+  "generated_at": "2026-08-24T09:55:52+00:00",
+  "recording": {
+    "name": "sub-T_ses-RT-20130906_behavior+ecephys.nwb",
+    "sha256": "83befb05b5d265c92e03c544c420e2bc0b6c7d3248fa14492c17f39a8aa1f124"
+  },
+  "protocol": {
+    "history_ms": 200,
+    "n_bins": 4,
+    "bin_ms": 50,
+    "cadence_ms": 10,
+    "target_lag_ms": 100,
+    "bin_offsets_s": [
+      -0.2,
+      -0.15,
+      -0.1,
+      -0.05,
+      0.0
+    ],
+    "history_window": "[reference - 200 ms, reference), half-open, bin 0 oldest",
+    "target": "stored cursor velocity at reference + 100 ms",
+    "flattened_layout": "bin-major: bin 0 units 0..n, then bin 1, and so on",
+    "counts_shape": "(n_samples, n_bins, n_units)"
+  },
+  "splits": {
+    "train": {
+      "samples": 42407,
+      "reference_samples": 42407,
+      "difference": 0,
+      "trials": 123,
+      "units": 53,
+      "feature_columns": 212,
+      "reference_time_s": [
+        11.87,
+        746.07
+      ],
+      "spikes_per_sample_mean": 60.802791991888135,
+      "max_spikes_in_one_bin": 10,
+      "target_velocity_mean": [
+        0.05082662106745708,
+        0.46042059565616644
+      ],
+      "target_velocity_std": [
+        7.245433872889509,
+        7.8269701813022525
+      ]
+    },
+    "validation": {
+      "samples": 8063,
+      "reference_samples": 8063,
+      "difference": 0,
+      "trials": 24,
+      "units": 53,
+      "feature_columns": 212,
+      "reference_time_s": [
+        747.38,
+        906.23
+      ],
+      "spikes_per_sample_mean": 60.20513456529827,
+      "max_spikes_in_one_bin": 9,
+      "target_velocity_mean": [
+        -0.04390710575231903,
+        0.3379934671952277
+      ],
+      "target_velocity_std": [
+        7.628634752857908,
+        7.38309972509898
+      ]
+    }
+  },
+  "normalization": {
+    "fitted_on": "train",
+    "n_samples": 42407,
+    "n_features_at_floor": 0,
+    "feature_mean_range": [
+      0.0005895253142169925,
+      1.5172730917065578
+    ],
+    "feature_std_range": [
+      0.024272984450219692,
+      1.505862945242697
+    ],
+    "target_mean": [
+      0.05082662106745708,
+      0.46042059565616644
+    ],
+    "target_std": [
+      7.245433872889509,
+      7.8269701813022525
+    ]
+  },
+  "held_out": {
+    "built": false,
+    "note": "The held-out split is not constructed before the frozen evaluation."
+  },
+  "array_sha256": {
+    "train_counts": "1c8f2b19b4eb510159cd2616841376c2443f369057b2c0ea5b6941e832c578bd",
+    "train_targets": "137f411bbfbe1b32fe715a134793309e5b8c678a353b9596ac91d62c8f248434",
+    "validation_counts": "99ce953ef1fcd7a9430aeb7f93440e774057974ffb9d3aa65d4c1c32a11471d9",
+    "validation_targets": "6c90ae29cfd375194f9d855ef6223d783318cf6445a28edc2a705ce0b63be8be"
+  },
+  "checks": [
+    {
+      "name": "feature protocol matches the frozen specification",
+      "passed": true,
+      "detail": "200 ms history as 4 x 50 ms bins, 10 ms cadence, 100 ms target lag"
+    },
+    {
+      "name": "train sample count matches the feasibility reference",
+      "passed": true,
+      "detail": "42407 samples (reference 42407, difference +0)"
+    },
+    {
+      "name": "train feature shape",
+      "passed": true,
+      "detail": "(42407, 4, 53)"
+    },
+    {
+      "name": "train target shape",
+      "passed": true,
+      "detail": "(42407, 2)"
+    },
+    {
+      "name": "train counts are non-negative integers without overflow",
+      "passed": true,
+      "detail": "dtype uint16, maximum 10 spikes in one bin"
+    },
+    {
+      "name": "train targets and timestamps are finite",
+      "passed": true,
+      "detail": "42407 samples checked"
+    },
+    {
+      "name": "train target sits exactly one lag after the reference",
+      "passed": true,
+      "detail": "maximum deviation 9.096e-14 s from 0.1 s"
+    },
+    {
+      "name": "train history stays inside its own trial",
+      "passed": true,
+      "detail": "tightest margin -1.137e-13 s before the trial start"
+    },
+    {
+      "name": "train target stays inside its own trial",
+      "passed": true,
+      "detail": "tightest margin -0.000e+00 s before the trial stop"
+    },
+    {
+      "name": "train samples are ordered and unique",
+      "passed": true,
+      "detail": "reference indices strictly increase across the split"
+    },
+    {
+      "name": "train uses only eligible trials of its own split",
+      "passed": true,
+      "detail": "123 of 123 eligible trials contributed"
+    },
+    {
+      "name": "train every eligible trial contributed a sample",
+      "passed": true,
+      "detail": "0 eligible trials produced no sample"
+    },
+    {
+      "name": "train unit order matches the session",
+      "passed": true,
+      "detail": "53 units in loader order"
+    },
+    {
+      "name": "validation sample count matches the feasibility reference",
+      "passed": true,
+      "detail": "8063 samples (reference 8063, difference +0)"
+    },
+    {
+      "name": "validation feature shape",
+      "passed": true,
+      "detail": "(8063, 4, 53)"
+    },
+    {
+      "name": "validation target shape",
+      "passed": true,
+      "detail": "(8063, 2)"
+    },
+    {
+      "name": "validation counts are non-negative integers without overflow",
+      "passed": true,
+      "detail": "dtype uint16, maximum 9 spikes in one bin"
+    },
+    {
+      "name": "validation targets and timestamps are finite",
+      "passed": true,
+      "detail": "8063 samples checked"
+    },
+    {
+      "name": "validation target sits exactly one lag after the reference",
+      "passed": true,
+      "detail": "maximum deviation 9.096e-14 s from 0.1 s"
+    },
+    {
+      "name": "validation history stays inside its own trial",
+      "passed": true,
+      "detail": "tightest margin 0.000e+00 s before the trial start"
+    },
+    {
+      "name": "validation target stays inside its own trial",
+      "passed": true,
+      "detail": "tightest margin -0.000e+00 s before the trial stop"
+    },
+    {
+      "name": "validation samples are ordered and unique",
+      "passed": true,
+      "detail": "reference indices strictly increase across the split"
+    },
+    {
+      "name": "validation uses only eligible trials of its own split",
+      "passed": true,
+      "detail": "24 of 24 eligible trials contributed"
+    },
+    {
+      "name": "validation every eligible trial contributed a sample",
+      "passed": true,
+      "detail": "0 eligible trials produced no sample"
+    },
+    {
+      "name": "validation unit order matches the session",
+      "passed": true,
+      "detail": "53 units in loader order"
+    },
+    {
+      "name": "training and validation samples share no trial",
+      "passed": true,
+      "detail": "123 training and 24 validation trials"
+    },
+    {
+      "name": "no held-out trial appears in any built split",
+      "passed": true,
+      "detail": "33 held-out trials remain unused"
+    },
+    {
+      "name": "no held-out artifact was written",
+      "passed": true,
+      "detail": "artifact directory contains no held-out file"
+    },
+    {
+      "name": "normalization was fitted on training data only",
+      "passed": true,
+      "detail": "fitted on train with 42407 samples"
+    },
+    {
+      "name": "standardized training features are centred and scaled",
+      "passed": true,
+      "detail": "largest mean 1.650e-14, largest scale error 8.860e-13"
+    },
+    {
+      "name": "validation is transformed with the unchanged training statistics",
+      "passed": true,
+      "detail": "validation retains a residual mean of 2.072e-01 rather than 0"
+    },
+    {
+      "name": "train manifest is aligned with the arrays",
+      "passed": true,
+      "detail": "42407 manifest rows for 42407 samples"
+    },
+    {
+      "name": "validation manifest is aligned with the arrays",
+      "passed": true,
+      "detail": "8063 manifest rows for 8063 samples"
+    }
+  ],
+  "all_checks_passed": true,
+  "artifacts": {
+    "train_arrays": "results/features/train.npz",
+    "train_manifest": "results/features/samples_train.csv",
+    "validation_arrays": "results/features/validation.npz",
+    "validation_manifest": "results/features/samples_validation.csv",
+    "normalization": "results/feature_normalization.json",
+    "summary_json": "results/feature_validation.json",
+    "summary_markdown": "results/feature_validation.md"
+  }
+}
