@@ -1,7 +1,5 @@
 # Dataset validation summary
 
-Generated 2026-08-11T09:49:13+00:00.
-
 ## Recording
 
 - Dandiset 000688, version `0.250122.1735`

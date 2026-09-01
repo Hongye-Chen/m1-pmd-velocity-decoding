@@ -20,7 +20,6 @@ from __future__ import annotations
 import argparse
 import json
 from dataclasses import dataclass
-from datetime import datetime, timezone
 from pathlib import Path
 
 import numpy as np
@@ -303,7 +302,6 @@ def build_summary(
     steps = np.diff(timestamps)
 
     return {
-        "generated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "dataset": {
             "dandiset_id": DANDISET_ID,
             "version": DANDISET_VERSION,
@@ -327,7 +325,9 @@ def build_summary(
             "end_s": float(timestamps[-1]),
             "duration_s": float(timestamps[-1] - timestamps[0]),
             "median_step_s": float(np.median(steps)),
-            "sampling_rate_hz": float(1.0 / np.median(steps)),
+            # Derived from the median step, which is recorded above at full
+            # precision; the trailing digits here would only echo float noise.
+            "sampling_rate_hz": round(float(1.0 / np.median(steps)), 2),
             "series_sharing_timebase": list(session.timestamps_shared_by),
         },
         "spikes": {
@@ -378,8 +378,6 @@ def render_markdown(summary: dict[str, object]) -> str:
 
     lines = [
         "# Dataset validation summary",
-        "",
-        f"Generated {summary['generated_at']}.",
         "",
         "## Recording",
         "",

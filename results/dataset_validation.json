@@ -1,5 +1,4 @@
 {
-  "generated_at": "2026-08-11T09:49:13+00:00",
   "dataset": {
     "dandiset_id": "000688",
     "version": "0.250122.1735",
@@ -26,7 +25,7 @@
     "end_s": 1073.17,
     "duration_s": 1073.15,
     "median_step_s": 0.009999999999990905,
-    "sampling_rate_hz": 100.00000000009095,
+    "sampling_rate_hz": 100.0,
     "series_sharing_timebase": [
       "cursor_pos",
       "cursor_vel",

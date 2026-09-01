@@ -14,6 +14,7 @@ tracked file.
 from __future__ import annotations
 
 import os
+from collections.abc import Iterable
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -26,6 +27,7 @@ __all__ = [
     "LOCAL_CONFIG_PATH",
     "NWB_PATH_ENV_VAR",
     "ConfigError",
+    "FeatureSettings",
     "ProjectConfig",
     "ProjectPaths",
     "RunSettings",
@@ -69,11 +71,31 @@ class RunSettings:
 
 
 @dataclass(frozen=True)
+class FeatureSettings:
+    """Causal feature protocol settings.
+
+    The neural-to-target lag is not fixed here: ``candidate_lags_ms`` lists the
+    values compared during selection, and the selected lag is recorded separately
+    once cross-validation has chosen it.
+    """
+
+    history_ms: int
+    n_bins: int
+    cadence_ms: int
+    candidate_lags_ms: tuple[int, ...]
+
+    @property
+    def max_candidate_lag_ms(self) -> int:
+        return max(self.candidate_lags_ms)
+
+
+@dataclass(frozen=True)
 class ProjectConfig:
     """Resolved project configuration."""
 
     paths: ProjectPaths
     run: RunSettings
+    features: FeatureSettings
     root: Path
     sources: tuple[Path, ...]
 
@@ -142,6 +164,7 @@ def load_config(
 
     paths_section = data.get("paths") or {}
     run_section = data.get("run") or {}
+    features_section = data.get("features") or {}
 
     nwb_value = paths_section.get("nwb_file")
     paths = ProjectPaths(
@@ -156,7 +179,18 @@ def load_config(
         log_level=str(run_section.get("log_level", "INFO")).upper(),
     )
 
-    return ProjectConfig(paths=paths, run=run, root=root_dir, sources=tuple(sources))
+    features = FeatureSettings(
+        history_ms=_coerce_positive_int(features_section.get("history_ms", 200), "history_ms"),
+        n_bins=_coerce_positive_int(features_section.get("n_bins", 4), "n_bins"),
+        cadence_ms=_coerce_positive_int(features_section.get("cadence_ms", 10), "cadence_ms"),
+        candidate_lags_ms=_coerce_lags(
+            features_section.get("candidate_lags_ms", [0, 50, 100, 150, 200])
+        ),
+    )
+
+    return ProjectConfig(
+        paths=paths, run=run, features=features, root=root_dir, sources=tuple(sources)
+    )
 
 
 def _read_yaml(path: Path) -> dict[str, Any]:
@@ -192,3 +226,35 @@ def _coerce_seed(value: Any) -> int:
         return int(value)
     except (TypeError, ValueError) as error:
         raise ConfigError(f"run.seed must be an integer, got {value!r}") from error
+
+
+def _coerce_positive_int(value: Any, name: str) -> int:
+    try:
+        number = int(value)
+    except (TypeError, ValueError) as error:
+        raise ConfigError(f"features.{name} must be an integer, got {value!r}") from error
+    if number <= 0:
+        raise ConfigError(f"features.{name} must be positive, got {number}")
+    return number
+
+
+def _coerce_lags(value: Any) -> tuple[int, ...]:
+    if isinstance(value, (str, bytes)) or not isinstance(value, Iterable):
+        raise ConfigError(
+            f"features.candidate_lags_ms must be a list of milliseconds, got {value!r}"
+        )
+    try:
+        lags = [int(item) for item in value]
+    except (TypeError, ValueError) as error:
+        raise ConfigError(
+            f"features.candidate_lags_ms must contain integers, got {value!r}"
+        ) from error
+    if not lags:
+        raise ConfigError("features.candidate_lags_ms must list at least one lag")
+    if any(lag < 0 for lag in lags):
+        raise ConfigError(
+            f"features.candidate_lags_ms must not contain negative values, got {lags}"
+        )
+    if len(set(lags)) != len(lags):
+        raise ConfigError(f"features.candidate_lags_ms must not repeat a lag, got {lags}")
+    return tuple(sorted(lags))

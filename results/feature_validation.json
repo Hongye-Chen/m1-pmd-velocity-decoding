@@ -1,5 +1,4 @@
 {
-  "generated_at": "2026-08-24T09:55:52+00:00",
   "recording": {
     "name": "sub-T_ses-RT-20130906_behavior+ecephys.nwb",
     "sha256": "83befb05b5d265c92e03c544c420e2bc0b6c7d3248fa14492c17f39a8aa1f124"
@@ -9,7 +8,6 @@
     "n_bins": 4,
     "bin_ms": 50,
     "cadence_ms": 10,
-    "target_lag_ms": 100,
     "bin_offsets_s": [
       -0.2,
       -0.15,
@@ -18,260 +16,438 @@
       0.0
     ],
     "history_window": "[reference - 200 ms, reference), half-open, bin 0 oldest",
-    "target": "stored cursor velocity at reference + 100 ms",
+    "target": "stored cursor velocity at reference + lag",
+    "candidate_lags_ms": [
+      0,
+      50,
+      100,
+      150,
+      200
+    ],
+    "eligibility_lag_ms": 200,
+    "eligibility_rule": "Target samples are those leaving room for the largest candidate lag and a whole history before it, so every lag is scored on identical targets.",
     "flattened_layout": "bin-major: bin 0 units 0..n, then bin 1, and so on",
     "counts_shape": "(n_samples, n_bins, n_units)"
   },
-  "splits": {
-    "train": {
-      "samples": 42407,
-      "reference_samples": 42407,
-      "difference": 0,
-      "trials": 123,
-      "units": 53,
-      "feature_columns": 212,
-      "reference_time_s": [
-        11.87,
-        746.07
-      ],
-      "spikes_per_sample_mean": 60.802791991888135,
-      "max_spikes_in_one_bin": 10,
-      "target_velocity_mean": [
-        0.05082662106745708,
-        0.46042059565616644
-      ],
-      "target_velocity_std": [
-        7.245433872889509,
-        7.8269701813022525
-      ]
-    },
-    "validation": {
-      "samples": 8063,
-      "reference_samples": 8063,
-      "difference": 0,
-      "trials": 24,
-      "units": 53,
-      "feature_columns": 212,
-      "reference_time_s": [
-        747.38,
-        906.23
-      ],
-      "spikes_per_sample_mean": 60.20513456529827,
-      "max_spikes_in_one_bin": 9,
-      "target_velocity_mean": [
-        -0.04390710575231903,
-        0.3379934671952277
-      ],
-      "target_velocity_std": [
-        7.628634752857908,
-        7.38309972509898
-      ]
-    }
-  },
-  "normalization": {
-    "fitted_on": "train",
-    "n_samples": 42407,
-    "n_features_at_floor": 0,
-    "feature_mean_range": [
-      0.0005895253142169925,
-      1.5172730917065578
+  "split_built": "train",
+  "shared_targets": {
+    "samples": 41177,
+    "trials": 123,
+    "target_time_s": [
+      12.07,
+      746.17
     ],
-    "feature_std_range": [
-      0.024272984450219692,
-      1.505862945242697
+    "velocity_mean": [
+      0.022588794138107188,
+      0.45128086420943087
     ],
-    "target_mean": [
-      0.05082662106745708,
-      0.46042059565616644
-    ],
-    "target_std": [
-      7.245433872889509,
-      7.8269701813022525
+    "velocity_std": [
+      7.337021147140046,
+      7.9224960015166905
     ]
   },
-  "held_out": {
-    "built": false,
-    "note": "The held-out split is not constructed before the frozen evaluation."
+  "lags": {
+    "0": {
+      "samples": 41177,
+      "feature_columns": 212,
+      "units": 53,
+      "reference_time_s": [
+        12.07,
+        746.17
+      ],
+      "spikes_per_sample_mean": 60.44816280933531,
+      "max_spikes_in_one_bin": 10,
+      "normalization_fitted_on": "train",
+      "normalization_samples": 41177,
+      "normalization_features_at_floor": 0
+    },
+    "50": {
+      "samples": 41177,
+      "feature_columns": 212,
+      "units": 53,
+      "reference_time_s": [
+        12.02,
+        746.12
+      ],
+      "spikes_per_sample_mean": 60.7202078830415,
+      "max_spikes_in_one_bin": 10,
+      "normalization_fitted_on": "train",
+      "normalization_samples": 41177,
+      "normalization_features_at_floor": 0
+    },
+    "100": {
+      "samples": 41177,
+      "feature_columns": 212,
+      "units": 53,
+      "reference_time_s": [
+        11.97,
+        746.07
+      ],
+      "spikes_per_sample_mean": 60.9039512349127,
+      "max_spikes_in_one_bin": 10,
+      "normalization_fitted_on": "train",
+      "normalization_samples": 41177,
+      "normalization_features_at_floor": 0
+    },
+    "150": {
+      "samples": 41177,
+      "feature_columns": 212,
+      "units": 53,
+      "reference_time_s": [
+        11.92,
+        746.02
+      ],
+      "spikes_per_sample_mean": 61.00466279719261,
+      "max_spikes_in_one_bin": 10,
+      "normalization_fitted_on": "train",
+      "normalization_samples": 41177,
+      "normalization_features_at_floor": 0
+    },
+    "200": {
+      "samples": 41177,
+      "feature_columns": 212,
+      "units": 53,
+      "reference_time_s": [
+        11.87,
+        745.97
+      ],
+      "spikes_per_sample_mean": 61.04594798066882,
+      "max_spikes_in_one_bin": 10,
+      "normalization_fitted_on": "train",
+      "normalization_samples": 41177,
+      "normalization_features_at_floor": 0
+    }
+  },
+  "not_built": {
+    "validation": "Built later, once the lag is selected from training data.",
+    "held_out": "Not constructed before the frozen evaluation."
   },
   "array_sha256": {
-    "train_counts": "1c8f2b19b4eb510159cd2616841376c2443f369057b2c0ea5b6941e832c578bd",
-    "train_targets": "137f411bbfbe1b32fe715a134793309e5b8c678a353b9596ac91d62c8f248434",
-    "validation_counts": "99ce953ef1fcd7a9430aeb7f93440e774057974ffb9d3aa65d4c1c32a11471d9",
-    "validation_targets": "6c90ae29cfd375194f9d855ef6223d783318cf6445a28edc2a705ce0b63be8be"
+    "train_lag000ms_counts": "65b8f5ca66fa03df4ed2009d1fe7f2ea8184e977a124f074775630ce60d31a62",
+    "train_lag000ms_targets": "3c9c87a000e212628ff83ac71bb8d2e09266c723a528603cd455e0e15de47404",
+    "train_lag050ms_counts": "bd976798e93f5493e954abfd651ddf46bdfab4f2e14ed6e1b7f5e350a9d9c5ca",
+    "train_lag050ms_targets": "3c9c87a000e212628ff83ac71bb8d2e09266c723a528603cd455e0e15de47404",
+    "train_lag100ms_counts": "4caeb5156fdfcef585965b54e57e86eee142e5f86a2e5e21883bb0b55fcdab3e",
+    "train_lag100ms_targets": "3c9c87a000e212628ff83ac71bb8d2e09266c723a528603cd455e0e15de47404",
+    "train_lag150ms_counts": "eff0e2313bb82e13ccc2cfba4c3649671005321d0e891ceff0eb24a5d429c0a2",
+    "train_lag150ms_targets": "3c9c87a000e212628ff83ac71bb8d2e09266c723a528603cd455e0e15de47404",
+    "train_lag200ms_counts": "a36464c5e1e8c117e7a734ed1d3e3845ef46707f761d94ae8df76a9f11b903c5",
+    "train_lag200ms_targets": "3c9c87a000e212628ff83ac71bb8d2e09266c723a528603cd455e0e15de47404"
   },
   "checks": [
     {
-      "name": "feature protocol matches the frozen specification",
+      "name": "history window matches the configured protocol",
       "passed": true,
-      "detail": "200 ms history as 4 x 50 ms bins, 10 ms cadence, 100 ms target lag"
+      "detail": "200 ms history as 4 x 50 ms bins, 10 ms cadence"
     },
     {
-      "name": "train sample count matches the feasibility reference",
+      "name": "candidate lags built",
       "passed": true,
-      "detail": "42407 samples (reference 42407, difference +0)"
+      "detail": "[0, 50, 100, 150, 200] ms, eligibility anchored on 200 ms"
     },
     {
-      "name": "train feature shape",
+      "name": "lag 0 ms feature and target shapes",
       "passed": true,
-      "detail": "(42407, 4, 53)"
+      "detail": "counts (41177, 4, 53), targets (41177, 2)"
     },
     {
-      "name": "train target shape",
-      "passed": true,
-      "detail": "(42407, 2)"
-    },
-    {
-      "name": "train counts are non-negative integers without overflow",
+      "name": "lag 0 ms counts are non-negative integers without overflow",
       "passed": true,
       "detail": "dtype uint16, maximum 10 spikes in one bin"
     },
     {
-      "name": "train targets and timestamps are finite",
+      "name": "lag 0 ms targets and timestamps are finite",
       "passed": true,
-      "detail": "42407 samples checked"
+      "detail": "41177 samples checked"
     },
     {
-      "name": "train target sits exactly one lag after the reference",
+      "name": "lag 0 ms target sits exactly one lag after the reference",
       "passed": true,
-      "detail": "maximum deviation 9.096e-14 s from 0.1 s"
+      "detail": "maximum deviation 0.000e+00 s from 0.0 s"
     },
     {
-      "name": "train history stays inside its own trial",
+      "name": "lag 0 ms history and target stay inside their own trial",
       "passed": true,
-      "detail": "tightest margin -1.137e-13 s before the trial start"
+      "detail": "history margin 2.000e-01 s, target margin -0.000e+00 s"
     },
     {
-      "name": "train target stays inside its own trial",
+      "name": "lag 0 ms samples are ordered and unique",
       "passed": true,
-      "detail": "tightest margin -0.000e+00 s before the trial stop"
+      "detail": "target indices strictly increase across the split"
     },
     {
-      "name": "train samples are ordered and unique",
+      "name": "lag 0 ms uses every eligible training trial and nothing else",
       "passed": true,
-      "detail": "reference indices strictly increase across the split"
+      "detail": "123 of 123 eligible training trials"
     },
     {
-      "name": "train uses only eligible trials of its own split",
+      "name": "lag 0 ms contains no validation or held-out trial",
       "passed": true,
-      "detail": "123 of 123 eligible trials contributed"
+      "detail": "65 trials outside training remain unused"
     },
     {
-      "name": "train every eligible trial contributed a sample",
-      "passed": true,
-      "detail": "0 eligible trials produced no sample"
-    },
-    {
-      "name": "train unit order matches the session",
+      "name": "lag 0 ms unit order matches the session",
       "passed": true,
       "detail": "53 units in loader order"
     },
     {
-      "name": "validation sample count matches the feasibility reference",
+      "name": "lag 0 ms manifest is aligned with the arrays",
       "passed": true,
-      "detail": "8063 samples (reference 8063, difference +0)"
+      "detail": "41177 manifest rows for 41177 samples"
     },
     {
-      "name": "validation feature shape",
+      "name": "lag 0 ms normalization is fitted on the full training set only",
       "passed": true,
-      "detail": "(8063, 4, 53)"
+      "detail": "fitted on train over 123 trials and 41177 samples"
     },
     {
-      "name": "validation target shape",
+      "name": "lag 50 ms feature and target shapes",
       "passed": true,
-      "detail": "(8063, 2)"
+      "detail": "counts (41177, 4, 53), targets (41177, 2)"
     },
     {
-      "name": "validation counts are non-negative integers without overflow",
+      "name": "lag 50 ms counts are non-negative integers without overflow",
       "passed": true,
-      "detail": "dtype uint16, maximum 9 spikes in one bin"
+      "detail": "dtype uint16, maximum 10 spikes in one bin"
     },
     {
-      "name": "validation targets and timestamps are finite",
+      "name": "lag 50 ms targets and timestamps are finite",
       "passed": true,
-      "detail": "8063 samples checked"
+      "detail": "41177 samples checked"
     },
     {
-      "name": "validation target sits exactly one lag after the reference",
+      "name": "lag 50 ms target sits exactly one lag after the reference",
       "passed": true,
-      "detail": "maximum deviation 9.096e-14 s from 0.1 s"
+      "detail": "maximum deviation 6.821e-14 s from 0.05 s"
     },
     {
-      "name": "validation history stays inside its own trial",
+      "name": "lag 50 ms history and target stay inside their own trial",
       "passed": true,
-      "detail": "tightest margin 0.000e+00 s before the trial start"
+      "detail": "history margin 1.500e-01 s, target margin -0.000e+00 s"
     },
     {
-      "name": "validation target stays inside its own trial",
+      "name": "lag 50 ms samples are ordered and unique",
       "passed": true,
-      "detail": "tightest margin -0.000e+00 s before the trial stop"
+      "detail": "target indices strictly increase across the split"
     },
     {
-      "name": "validation samples are ordered and unique",
+      "name": "lag 50 ms uses every eligible training trial and nothing else",
       "passed": true,
-      "detail": "reference indices strictly increase across the split"
+      "detail": "123 of 123 eligible training trials"
     },
     {
-      "name": "validation uses only eligible trials of its own split",
+      "name": "lag 50 ms contains no validation or held-out trial",
       "passed": true,
-      "detail": "24 of 24 eligible trials contributed"
+      "detail": "65 trials outside training remain unused"
     },
     {
-      "name": "validation every eligible trial contributed a sample",
-      "passed": true,
-      "detail": "0 eligible trials produced no sample"
-    },
-    {
-      "name": "validation unit order matches the session",
+      "name": "lag 50 ms unit order matches the session",
       "passed": true,
       "detail": "53 units in loader order"
     },
     {
-      "name": "training and validation samples share no trial",
+      "name": "lag 50 ms manifest is aligned with the arrays",
       "passed": true,
-      "detail": "123 training and 24 validation trials"
+      "detail": "41177 manifest rows for 41177 samples"
     },
     {
-      "name": "no held-out trial appears in any built split",
+      "name": "lag 50 ms normalization is fitted on the full training set only",
       "passed": true,
-      "detail": "33 held-out trials remain unused"
+      "detail": "fitted on train over 123 trials and 41177 samples"
     },
     {
-      "name": "no held-out artifact was written",
+      "name": "lag 100 ms feature and target shapes",
       "passed": true,
-      "detail": "artifact directory contains no held-out file"
+      "detail": "counts (41177, 4, 53), targets (41177, 2)"
     },
     {
-      "name": "normalization was fitted on training data only",
+      "name": "lag 100 ms counts are non-negative integers without overflow",
       "passed": true,
-      "detail": "fitted on train with 42407 samples"
+      "detail": "dtype uint16, maximum 10 spikes in one bin"
     },
     {
-      "name": "standardized training features are centred and scaled",
+      "name": "lag 100 ms targets and timestamps are finite",
       "passed": true,
-      "detail": "largest mean 1.650e-14, largest scale error 8.860e-13"
+      "detail": "41177 samples checked"
     },
     {
-      "name": "validation is transformed with the unchanged training statistics",
+      "name": "lag 100 ms target sits exactly one lag after the reference",
       "passed": true,
-      "detail": "validation retains a residual mean of 2.072e-01 rather than 0"
+      "detail": "maximum deviation 9.096e-14 s from 0.1 s"
     },
     {
-      "name": "train manifest is aligned with the arrays",
+      "name": "lag 100 ms history and target stay inside their own trial",
       "passed": true,
-      "detail": "42407 manifest rows for 42407 samples"
+      "detail": "history margin 1.000e-01 s, target margin -0.000e+00 s"
     },
     {
-      "name": "validation manifest is aligned with the arrays",
+      "name": "lag 100 ms samples are ordered and unique",
       "passed": true,
-      "detail": "8063 manifest rows for 8063 samples"
+      "detail": "target indices strictly increase across the split"
+    },
+    {
+      "name": "lag 100 ms uses every eligible training trial and nothing else",
+      "passed": true,
+      "detail": "123 of 123 eligible training trials"
+    },
+    {
+      "name": "lag 100 ms contains no validation or held-out trial",
+      "passed": true,
+      "detail": "65 trials outside training remain unused"
+    },
+    {
+      "name": "lag 100 ms unit order matches the session",
+      "passed": true,
+      "detail": "53 units in loader order"
+    },
+    {
+      "name": "lag 100 ms manifest is aligned with the arrays",
+      "passed": true,
+      "detail": "41177 manifest rows for 41177 samples"
+    },
+    {
+      "name": "lag 100 ms normalization is fitted on the full training set only",
+      "passed": true,
+      "detail": "fitted on train over 123 trials and 41177 samples"
+    },
+    {
+      "name": "lag 150 ms feature and target shapes",
+      "passed": true,
+      "detail": "counts (41177, 4, 53), targets (41177, 2)"
+    },
+    {
+      "name": "lag 150 ms counts are non-negative integers without overflow",
+      "passed": true,
+      "detail": "dtype uint16, maximum 10 spikes in one bin"
+    },
+    {
+      "name": "lag 150 ms targets and timestamps are finite",
+      "passed": true,
+      "detail": "41177 samples checked"
+    },
+    {
+      "name": "lag 150 ms target sits exactly one lag after the reference",
+      "passed": true,
+      "detail": "maximum deviation 9.096e-14 s from 0.15 s"
+    },
+    {
+      "name": "lag 150 ms history and target stay inside their own trial",
+      "passed": true,
+      "detail": "history margin 5.000e-02 s, target margin -0.000e+00 s"
+    },
+    {
+      "name": "lag 150 ms samples are ordered and unique",
+      "passed": true,
+      "detail": "target indices strictly increase across the split"
+    },
+    {
+      "name": "lag 150 ms uses every eligible training trial and nothing else",
+      "passed": true,
+      "detail": "123 of 123 eligible training trials"
+    },
+    {
+      "name": "lag 150 ms contains no validation or held-out trial",
+      "passed": true,
+      "detail": "65 trials outside training remain unused"
+    },
+    {
+      "name": "lag 150 ms unit order matches the session",
+      "passed": true,
+      "detail": "53 units in loader order"
+    },
+    {
+      "name": "lag 150 ms manifest is aligned with the arrays",
+      "passed": true,
+      "detail": "41177 manifest rows for 41177 samples"
+    },
+    {
+      "name": "lag 150 ms normalization is fitted on the full training set only",
+      "passed": true,
+      "detail": "fitted on train over 123 trials and 41177 samples"
+    },
+    {
+      "name": "lag 200 ms feature and target shapes",
+      "passed": true,
+      "detail": "counts (41177, 4, 53), targets (41177, 2)"
+    },
+    {
+      "name": "lag 200 ms counts are non-negative integers without overflow",
+      "passed": true,
+      "detail": "dtype uint16, maximum 10 spikes in one bin"
+    },
+    {
+      "name": "lag 200 ms targets and timestamps are finite",
+      "passed": true,
+      "detail": "41177 samples checked"
+    },
+    {
+      "name": "lag 200 ms target sits exactly one lag after the reference",
+      "passed": true,
+      "detail": "maximum deviation 6.822e-14 s from 0.2 s"
+    },
+    {
+      "name": "lag 200 ms history and target stay inside their own trial",
+      "passed": true,
+      "detail": "history margin -1.137e-13 s, target margin -0.000e+00 s"
+    },
+    {
+      "name": "lag 200 ms samples are ordered and unique",
+      "passed": true,
+      "detail": "target indices strictly increase across the split"
+    },
+    {
+      "name": "lag 200 ms uses every eligible training trial and nothing else",
+      "passed": true,
+      "detail": "123 of 123 eligible training trials"
+    },
+    {
+      "name": "lag 200 ms contains no validation or held-out trial",
+      "passed": true,
+      "detail": "65 trials outside training remain unused"
+    },
+    {
+      "name": "lag 200 ms unit order matches the session",
+      "passed": true,
+      "detail": "53 units in loader order"
+    },
+    {
+      "name": "lag 200 ms manifest is aligned with the arrays",
+      "passed": true,
+      "detail": "41177 manifest rows for 41177 samples"
+    },
+    {
+      "name": "lag 200 ms normalization is fitted on the full training set only",
+      "passed": true,
+      "detail": "fitted on train over 123 trials and 41177 samples"
+    },
+    {
+      "name": "every lag predicts identical targets in identical order",
+      "passed": true,
+      "detail": "41177 shared target samples across 5 lags"
+    },
+    {
+      "name": "each lag shifts the neural window",
+      "passed": true,
+      "detail": "reference samples differ between lags while targets are shared"
+    },
+    {
+      "name": "no validation or held-out artifact was written",
+      "passed": true,
+      "detail": "training artifacts only"
     }
   ],
   "all_checks_passed": true,
   "artifacts": {
-    "train_arrays": "results/features/train.npz",
-    "train_manifest": "results/features/samples_train.csv",
-    "validation_arrays": "results/features/validation.npz",
-    "validation_manifest": "results/features/samples_validation.csv",
+    "train_lag000ms_arrays": "results/features/train_lag000ms.npz",
+    "train_lag000ms_manifest": "results/features/samples_train_lag000ms.csv",
+    "train_lag050ms_arrays": "results/features/train_lag050ms.npz",
+    "train_lag050ms_manifest": "results/features/samples_train_lag050ms.csv",
+    "train_lag100ms_arrays": "results/features/train_lag100ms.npz",
+    "train_lag100ms_manifest": "results/features/samples_train_lag100ms.csv",
+    "train_lag150ms_arrays": "results/features/train_lag150ms.npz",
+    "train_lag150ms_manifest": "results/features/samples_train_lag150ms.csv",
+    "train_lag200ms_arrays": "results/features/train_lag200ms.npz",
+    "train_lag200ms_manifest": "results/features/samples_train_lag200ms.csv",
     "normalization": "results/feature_normalization.json",
     "summary_json": "results/feature_validation.json",
     "summary_markdown": "results/feature_validation.md"

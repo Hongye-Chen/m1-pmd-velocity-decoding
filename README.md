@@ -88,15 +88,24 @@ if a check fails and 2 if the recording is not configured or is a different file
 
 ```powershell
 python -m scripts.build_features
+python -m scripts.build_features --lags 0 100 200
 ```
 
-This builds the training and validation samples, fits normalization on the training
-split alone, and writes the feature arrays, the fitted normalization, and the
-per-sample manifests. Each sample pairs 200 ms of causal spike history, as four
-chronological half-open 50 ms bins across all 53 units, with the cursor velocity
-100 ms after the reference time, and both the history and the target are required to
-lie inside a single trial. The command then validates the produced arrays against
-that protocol and exits 1 if a check fails. The held-out split is not built.
+Each sample pairs 200 ms of causal spike history, as four chronological half-open
+50 ms bins across all 53 units, with the cursor velocity a fixed lag later. Both the
+history and the target must lie inside a single trial.
+
+The neural-to-target lag is not fixed in advance. The command builds one feature set
+per candidate lag from `features.candidate_lags_ms` in `configs/default.yaml`, or per
+lag given on the command line. Target eligibility is anchored on the largest
+candidate, so every lag is scored on an identical set of target samples in an
+identical order and only the neural window moves. That keeps the later comparison
+between lags fair rather than rewarding whichever lag retained the easiest samples.
+
+The command writes the feature arrays, per-sample manifests, and the full-training
+normalization for each lag, then validates the result and exits 1 if a check fails.
+Only training features are built here: the lag is chosen from training data alone by
+cross-validation, so no validation or held-out artifact is produced.
 
 ## Run the tests
 
