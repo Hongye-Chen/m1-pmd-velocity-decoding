@@ -1,0 +1,27 @@
+{
+  "lag_ms": 50,
+  "ridge_alpha": 10000.0,
+  "selected_by": "training-only trial-grouped cross-validation",
+  "selection_metric": "mean out-of-fold per-axis R2",
+  "out_of_fold_r2_mean": 0.5636005771747188,
+  "lag_grid_ms": [
+    0,
+    50,
+    100,
+    150,
+    200
+  ],
+  "alpha_grid": [
+    0.1,
+    1.0,
+    10.0,
+    100.0,
+    1000.0,
+    10000.0
+  ],
+  "n_groups": 5,
+  "history_ms": 200,
+  "n_bins": 4,
+  "cadence_ms": 10,
+  "recording_sha256": "83befb05b5d265c92e03c544c420e2bc0b6c7d3248fa14492c17f39a8aa1f124"
+}

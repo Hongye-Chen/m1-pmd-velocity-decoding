@@ -107,6 +107,31 @@ normalization for each lag, then validates the result and exits 1 if a check fai
 Only training features are built here: the lag is chosen from training data alone by
 cross-validation, so no validation or held-out artifact is produced.
 
+## Select the lag and Ridge alpha
+
+```powershell
+python -m scripts.select_lag_alpha
+```
+
+This chooses the one shared neural-to-target lag used by every later decoder, along
+with a Ridge penalty, using only the eligible training trials. The 123 training
+trials are sorted by original row and divided into five contiguous groups; each fold
+trains on four groups and is assessed on the fifth, with normalization fitted on the
+fold's training trials and applied unchanged to its assessment trials. Out-of-fold
+predictions are concatenated in original sample order, and the selection score is
+the mean of the per-axis coefficients of determination.
+
+Validation and held-out trials are not read. The Ridge models fitted here are
+temporary selection instruments and are discarded; the official models are fitted
+separately on the complete training set. The outcome is written to
+`results/selected_configuration.json`, with the full grid, per-fold diagnostics, and
+ranking under `results/selection/`.
+
+The frozen selection is a **50 ms lag** with **Ridge alpha 10000**. Its concatenated
+out-of-fold mean axis-specific R2 is 0.563601. This is a training-only selection
+diagnostic, not an official validation benchmark; the official constant and Ridge
+models are fitted and evaluated separately in the next stage.
+
 ## Run the tests
 
 ```powershell
