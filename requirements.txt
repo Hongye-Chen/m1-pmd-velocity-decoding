@@ -1,36 +1,16 @@
-# Direct dependencies, pinned to the versions this project was verified against.
-#
-# The project runs inside the pre-existing `BCI` conda environment, which already
-# provides every package below, so nothing needs to be installed. Do not run
-# `pip install -r requirements.txt` against that environment: it is shared, and
-# these pins are a record of what was audited rather than an upgrade instruction.
-#
-# Audited environment:
-#   Python 3.11.15
-#   PyTorch built for CUDA 12.6, installed as 2.12.0+cu126
-#   NVIDIA GeForce RTX 4090 available
-#   `pip check` reported no broken dependencies
-#
-# The pinned PyTorch build is not on the default package index. A fresh environment
-# needs:
-#   pip install torch==2.12.0 --index-url https://download.pytorch.org/whl/cu126
+# Direct dependencies. Compatible ranges keep the project installable while
+# preventing unintended major-version upgrades.
 
 # Runtime
-numpy==2.4.6
-scipy==1.17.1
-pandas==3.0.3
-scikit-learn==1.8.0
-pynwb==4.1.0
-h5py==3.16.0
-torch==2.12.0
-matplotlib==3.10.9
-pyyaml==6.0.3
+numpy>=1.26,<3
+scipy>=1.11,<2
+pandas>=2.0,<4
+scikit-learn>=1.4,<2
+pynwb>=3.0,<5
+h5py>=3.10,<4
+torch>=2.2,<3
+matplotlib>=3.8,<4
+pyyaml>=6,<7
 
 # Testing
-pytest==9.0.3
-
-# Present in the environment and available when genuinely needed, but not imported
-# by the current code
-seaborn==0.13.2
-joblib==1.5.3
-tqdm==4.67.3
+pytest>=8,<10

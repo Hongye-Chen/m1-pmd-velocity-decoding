@@ -1,9 +1,7 @@
 """Build and validate causal training features for every candidate lag.
 
-Run from the repository root with the ``BCI`` environment active::
+Run from the repository root with the project environment active::
 
-    conda deactivate
-    conda activate BCI
     python -m scripts.build_features
     python -m scripts.build_features --lags 0 100 200
 

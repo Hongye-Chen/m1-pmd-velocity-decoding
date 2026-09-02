@@ -1,5 +1,4 @@
-# Tool configuration only. The project is used in place from the repository root
-# inside the existing `BCI` conda environment and is deliberately not installable,
+# Tool configuration only. The project is used in place from the repository root,
 # so there is no [project] or [build-system] table here.
 
 [tool.pytest.ini_options]

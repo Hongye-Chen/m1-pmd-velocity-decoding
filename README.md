@@ -4,23 +4,34 @@ Offline decoding of two-dimensional cursor velocity from the causal history of
 simultaneously recorded primary motor and dorsal premotor sorted-unit spiking
 activity, within a single public recording session.
 
-The repository currently contains the project scaffolding: configuration loading,
-logging, deterministic seeding, and an environment check. Data loading, features,
-decoders, and results follow.
+The repository currently includes dataset validation, causal feature construction,
+and training-only lag and Ridge-alpha selection. The official decoders and final
+evaluation follow.
 
 ## Setup
 
-The project runs inside an existing conda environment named `BCI`. No new
-environment is created and no packages need to be installed.
-
-Deactivate whatever environment is currently active, then activate `BCI`:
+Python 3.11 is recommended. Create a fresh conda environment:
 
 ```powershell
-conda deactivate
-conda activate BCI
+conda env create -f environment.yml
+conda activate neural-decoding
 ```
 
-Run every command below from the repository root with `BCI` active.
+Alternatively, use a virtual environment:
+
+```powershell
+py -3.11 -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install --upgrade pip
+python -m pip install -r requirements.txt
+```
+
+CPU execution is sufficient for the current workflow. GPU acceleration is optional
+for later deep-learning stages; install a PyTorch build appropriate for the local
+CUDA setup using the official PyTorch installation instructions.
+
+Run every command below from the repository root with the created environment
+active.
 
 ## Obtain the recording
 
@@ -64,12 +75,9 @@ Configuration is merged from `configs/default.yaml`, then `configs/local.yaml`, 
 python -m scripts.check_environment
 ```
 
-The check imports every dependency, compares the active versions against the pins
-in `requirements.txt`, imports the project package, and reports whether the
-configured recording is present and whether CUDA is available. It exits non-zero if
-a dependency cannot be imported. A version that only differs from its pin is
-reported without failing, because the environment is shared and is not modified to
-satisfy this check.
+The check imports every direct dependency and the project package, reports installed
+versions, and shows whether the configured recording and CUDA are available. It
+exits non-zero if a required dependency cannot be imported.
 
 ## Validate the recording
 

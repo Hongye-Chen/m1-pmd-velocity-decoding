@@ -1,9 +1,7 @@
 """Select the shared neural-to-target lag and Ridge alpha from training trials only.
 
-Run from the repository root with the ``BCI`` environment active::
+Run from the repository root with the project environment active::
 
-    conda deactivate
-    conda activate BCI
     python -m scripts.select_lag_alpha
 
 The command builds training features for every candidate lag over one shared target

@@ -1,9 +1,7 @@
 """Validate the selected recording and write the dataset manifests.
 
-Run from the repository root with the ``BCI`` environment active::
+Run from the repository root with the project environment active::
 
-    conda deactivate
-    conda activate BCI
     python -m scripts.validate_dataset
 
 The command verifies the configured NWB file against the frozen dataset decision,

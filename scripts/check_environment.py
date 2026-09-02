@@ -1,16 +1,11 @@
 """Check that the activated environment provides everything the project needs.
 
-Run from the repository root with the ``BCI`` environment active::
+Run from the repository root with the project environment active::
 
-    conda deactivate
-    conda activate BCI
     python -m scripts.check_environment
 
-Every dependency is imported, its version is compared against the pin recorded in
-``requirements.txt``, and the project package is imported. A failed import exits
-with status 1. A version that merely differs from its pin is reported but does not
-fail the check, because the environment is shared and must not be modified to
-satisfy this script.
+Every direct dependency and the project package are imported, and installed
+versions are reported. A failed import exits with status 1.
 """
 
 from __future__ import annotations
@@ -19,10 +14,6 @@ import argparse
 import sys
 from dataclasses import dataclass
 from importlib import import_module, metadata
-from pathlib import Path
-
-PROJECT_ROOT = Path(__file__).resolve().parents[1]
-REQUIREMENTS_FILE = PROJECT_ROOT / "requirements.txt"
 
 
 @dataclass(frozen=True)
@@ -54,7 +45,6 @@ class CheckResult:
 
     requirement: Requirement
     installed_version: str | None
-    pinned_version: str | None
     error: str | None
 
     @property
@@ -62,41 +52,16 @@ class CheckResult:
         return self.error is None
 
     @property
-    def matches_pin(self) -> bool:
-        if self.pinned_version is None or self.installed_version is None:
-            return True
-        return _public_version(self.installed_version) == self.pinned_version
-
-    @property
     def status(self) -> str:
         if not self.importable:
             return "MISSING"
-        if self.pinned_version is None:
-            return "ok (not pinned)"
-        if not self.matches_pin:
-            return f"differs from pin {self.pinned_version}"
         return "ok"
-
-
-def read_pinned_versions(path: Path = REQUIREMENTS_FILE) -> dict[str, str]:
-    """Parse ``name==version`` pins from the requirements file."""
-    if not path.is_file():
-        return {}
-    pins: dict[str, str] = {}
-    for line in path.read_text(encoding="utf-8").splitlines():
-        entry = line.strip()
-        if not entry or entry.startswith("#") or "==" not in entry:
-            continue
-        name, _, version = entry.partition("==")
-        pins[_normalize(name)] = version.strip()
-    return pins
 
 
 def check_packages(
     requirements: tuple[Requirement, ...] = REQUIRED_PACKAGES,
 ) -> list[CheckResult]:
-    """Import every requirement and compare its version with the recorded pin."""
-    pins = read_pinned_versions()
+    """Import every direct requirement and report its installed version."""
     results: list[CheckResult] = []
     for requirement in requirements:
         error: str | None = None
@@ -111,7 +76,6 @@ def check_packages(
             CheckResult(
                 requirement=requirement,
                 installed_version=version,
-                pinned_version=pins.get(_normalize(requirement.distribution)),
                 error=error,
             )
         )
@@ -169,16 +133,7 @@ def main(argv: list[str] | None = None) -> int:
         print(f"\nFAILED: could not import {names}")
         return 1
 
-    unpinned = [
-        result.requirement.distribution for result in results if not result.matches_pin
-    ]
-    if unpinned:
-        print(
-            "\nPASSED with versions that differ from requirements.txt: "
-            + ", ".join(unpinned)
-        )
-    else:
-        print("\nPASSED: every dependency imports at its pinned version")
+    print("\nPASSED: every direct dependency imports")
     return 0
 
 
@@ -187,15 +142,6 @@ def _installed_version(distribution: str, module: object) -> str | None:
         return metadata.version(distribution)
     except metadata.PackageNotFoundError:
         return getattr(module, "__version__", None)
-
-
-def _public_version(version: str) -> str:
-    """Drop a local build tag such as ``+cu126`` so pins stay index independent."""
-    return version.partition("+")[0]
-
-
-def _normalize(name: str) -> str:
-    return name.strip().lower().replace("_", "-")
 
 
 def _report_torch_device() -> None:
