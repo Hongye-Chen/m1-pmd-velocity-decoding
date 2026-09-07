@@ -5,7 +5,7 @@ Settings are merged from three sources, in increasing order of precedence:
 1. ``configs/default.yaml`` — tracked defaults that contain no machine-specific value;
 2. ``configs/local.yaml`` — untracked overrides holding the local dataset path;
 3. the ``NEURAL_DECODING_NWB_FILE`` environment variable, then explicit overrides
-   passed to :func:`load_config`.
+   passed to ``load_config``.
 
 The NWB recording lives outside the repository, so its path is never stored in a
 tracked file.

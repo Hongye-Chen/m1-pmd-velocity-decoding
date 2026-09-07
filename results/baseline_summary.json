@@ -1,0 +1,232 @@
+{
+  "recording": {
+    "name": "sub-T_ses-RT-20130906_behavior+ecephys.nwb",
+    "sha256": "83befb05b5d265c92e03c544c420e2bc0b6c7d3248fa14492c17f39a8aa1f124"
+  },
+  "configuration": {
+    "lag_ms": 50,
+    "ridge_alpha": 10000.0,
+    "read_from": "selected_configuration.json",
+    "selected_by": "training-only trial-grouped cross-validation, in an earlier step",
+    "eligibility_lag_ms": 50,
+    "eligibility_rule": "target eligibility uses the selected lag, frozen for every reported model so all models share one validation sample set",
+    "history_ms": 200,
+    "n_bins": 4,
+    "bin_ms": 50,
+    "cadence_ms": 10
+  },
+  "procedure": {
+    "normalization": "fitted once on the complete training set and applied unchanged to validation",
+    "constant_baseline": "predicts the mean training velocity for every sample and uses no neural data",
+    "ridge": "fresh model fitted on the complete training set at the selected alpha",
+    "evaluation": "each model scored once on validation; no tuning followed",
+    "metric": "per-axis coefficient of determination, Pearson correlation, and root-mean-square error, each reported per axis and as the arithmetic mean of the axes"
+  },
+  "samples": {
+    "training_trials": 123,
+    "training_samples": 43022,
+    "validation_trials": 24,
+    "validation_samples": 8183,
+    "feature_columns": 212,
+    "n_units": 53
+  },
+  "models": {
+    "constant_baseline": {
+      "velocity_cm_s": {
+        "x": 0.06236580954333505,
+        "y": 0.460252161165002
+      },
+      "fitted_on": "train",
+      "n_training_samples": 43022
+    },
+    "ridge": {
+      "alpha": 10000.0,
+      "fitted_on": "train",
+      "n_training_samples": 43022,
+      "n_features": 212,
+      "solver": "cholesky",
+      "coefficient_absolute_max": 0.12327051631821047
+    }
+  },
+  "validation_metrics": {
+    "constant": {
+      "n_samples": 8183,
+      "r2": {
+        "x": -0.00014023552133490824,
+        "y": -0.00027640750275859105
+      },
+      "r2_mean": -0.00020832151204674965,
+      "pearson_r": {
+        "x": null,
+        "y": null
+      },
+      "pearson_r_mean": null,
+      "rmse_cm_s": {
+        "x": 7.578222534978209,
+        "y": 7.336734289454649
+      },
+      "rmse_cm_s_mean": 7.457478412216428
+    },
+    "ridge": {
+      "n_samples": 8183,
+      "r2": {
+        "x": 0.5435876668361961,
+        "y": 0.5523081282070688
+      },
+      "r2_mean": 0.5479478975216324,
+      "pearson_r": {
+        "x": 0.7456360802365736,
+        "y": 0.7438259632287646
+      },
+      "pearson_r_mean": 0.744731021732669,
+      "rmse_cm_s": {
+        "x": 5.119359051287232,
+        "y": 4.908314503602772
+      },
+      "rmse_cm_s_mean": 5.013836777445002
+    }
+  },
+  "training_diagnostics": {
+    "purpose": "training-set fit quality, reported for the train-to-validation gap only and not a project result",
+    "constant": {
+      "n_samples": 43022,
+      "r2": {
+        "x": 0.0,
+        "y": 0.0
+      },
+      "r2_mean": 0.0,
+      "pearson_r": {
+        "x": null,
+        "y": null
+      },
+      "pearson_r_mean": null,
+      "rmse_cm_s": {
+        "x": 7.200379012892409,
+        "y": 7.7770329598767205
+      },
+      "rmse_cm_s_mean": 7.488705986384565
+    },
+    "ridge": {
+      "n_samples": 43022,
+      "r2": {
+        "x": 0.5804115664616774,
+        "y": 0.5840034773980494
+      },
+      "r2_mean": 0.5822075219298634,
+      "pearson_r": {
+        "x": 0.7641990743830989,
+        "y": 0.7660525236887519
+      },
+      "pearson_r_mean": 0.7651257990359254,
+      "rmse_cm_s": {
+        "x": 4.664092031535464,
+        "y": 5.016014574272938
+      },
+      "rmse_cm_s_mean": 4.8400533029042005
+    }
+  },
+  "not_accessed": {
+    "held_out": "not read while establishing the baselines"
+  },
+  "checks": [
+    {
+      "name": "the configuration was read from the selection step, not chosen here",
+      "passed": true,
+      "detail": "lag 50 ms and alpha 10000 read from selected_configuration.json, both inside the frozen grid"
+    },
+    {
+      "name": "the recording is the one the configuration was selected on",
+      "passed": true,
+      "detail": "checksum 83befb05b5d2... matches"
+    },
+    {
+      "name": "both splits were built at the selected lag",
+      "passed": true,
+      "detail": "lag 50 ms for training and validation"
+    },
+    {
+      "name": "target eligibility uses the selected lag",
+      "passed": true,
+      "detail": "eligibility anchored on 50 ms, the frozen rule for every reported model"
+    },
+    {
+      "name": "every eligible training trial was fitted and no other",
+      "passed": true,
+      "detail": "123 of 123 eligible training trials"
+    },
+    {
+      "name": "every eligible validation trial was evaluated and no other",
+      "passed": true,
+      "detail": "24 of 24 eligible validation trials"
+    },
+    {
+      "name": "the training and validation samples are disjoint",
+      "passed": true,
+      "detail": "123 training and 24 validation trials share no trial"
+    },
+    {
+      "name": "the held-out split was not read",
+      "passed": true,
+      "detail": "all 33 assigned held-out trial rows remain untouched"
+    },
+    {
+      "name": "normalization was fitted once on the complete training set",
+      "passed": true,
+      "detail": "fitted on 'train' over 43022 samples from 123 trials"
+    },
+    {
+      "name": "validation was standardized with the training statistics",
+      "passed": true,
+      "detail": "standardized validation features retain a mean offset of up to 0.2065, so they were not re-centred on themselves"
+    },
+    {
+      "name": "the constant baseline is the mean of the complete training targets",
+      "passed": true,
+      "detail": "baseline velocity (0.0624, 0.4603) cm/s equals the training mean"
+    },
+    {
+      "name": "the constant baseline scores exactly zero on its own training targets",
+      "passed": true,
+      "detail": "training R2 +0.00e+00 and +0.00e+00, the arithmetic identity of predicting a set's own mean"
+    },
+    {
+      "name": "the Ridge model has one coefficient per feature column and axis",
+      "passed": true,
+      "detail": "2 axes x 212 columns (4 bins x 53 units)"
+    },
+    {
+      "name": "the Ridge model used the selected alpha",
+      "passed": true,
+      "detail": "alpha 10000"
+    },
+    {
+      "name": "each model produced one finite prediction per validation sample",
+      "passed": true,
+      "detail": "8183 predictions for each of 2 models"
+    },
+    {
+      "name": "the saved model artifacts reproduce the predictions exactly",
+      "passed": true,
+      "detail": "both models reloaded from JSON and predicted identically, bit for bit"
+    },
+    {
+      "name": "the reported metrics recompute from the saved per-sample predictions",
+      "passed": true,
+      "detail": "8183 saved rows reproduce every reported R2"
+    },
+    {
+      "name": "every saved prediction is identified by its validation sample",
+      "passed": true,
+      "detail": "trial row and behaviour sample index recorded for all 8183 predictions"
+    }
+  ],
+  "all_checks_passed": true,
+  "artifacts": {
+    "validation_predictions": "results/baselines/validation_predictions.csv",
+    "constant_baseline_model": "results/baselines/constant_baseline.json",
+    "ridge_decoder_model": "results/baselines/ridge_decoder.json",
+    "baseline_metrics": "results/baseline_metrics.json",
+    "summary_json": "results/baseline_summary.json",
+    "summary_markdown": "results/baseline_summary.md"
+  }
+}

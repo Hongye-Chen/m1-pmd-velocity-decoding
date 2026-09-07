@@ -1,13 +1,10 @@
 """Synthetic tests for lag and alpha selection.
 
-The failures guarded here would all produce a plausible winner rather than an
-error: a fold that splits a trial leaves near-duplicate samples on both sides of
-the boundary and inflates the score, a fold standardized with its own statistics
-scores better than it should, a mis-aggregated metric ranks the wrong candidate,
-and tie-breaking that ignores its stated order silently picks a different model.
-
-Scores are checked against values computed by hand, and the cross-validation is
-exercised on a small synthetic session rather than the recording.
+Each failure guarded here would produce a plausible winner rather than an error: a
+fold that splits a trial leaves near-duplicates on both sides of the boundary, a
+fold standardized with its own statistics scores better than it should, and
+tie-breaking that ignores its stated order picks a different model. The metric
+functions are covered in ``test_metrics.py``.
 """
 
 from __future__ import annotations
@@ -25,8 +22,6 @@ from neural_decoding.selection import (
     contiguous_trial_groups,
     cross_validate,
     make_folds,
-    mean_r2,
-    r2_per_axis,
     select_candidate,
 )
 from neural_decoding.splits import build_trial_table
@@ -128,47 +123,6 @@ def test_each_fold_assesses_one_group_and_trains_on_the_rest() -> None:
         assessed.extend(fold.assessment_rows)
     # Every trial is assessed exactly once across the folds.
     assert sorted(assessed) == rows
-
-
-def test_scores_match_values_computed_by_hand() -> None:
-    truth = np.array([[0.0, 10.0], [2.0, 20.0], [4.0, 30.0], [6.0, 40.0]])
-
-    # A perfect prediction scores 1 on both axes.
-    assert r2_per_axis(truth, truth).tolist() == [1.0, 1.0]
-
-    # Predicting the mean of each axis scores 0.
-    mean_prediction = np.tile(truth.mean(axis=0), (truth.shape[0], 1))
-    assert np.allclose(r2_per_axis(truth, mean_prediction), [0.0, 0.0])
-
-    # A known residual: total sum of squares is 20 on the first axis, and a
-    # residual of 1 per sample gives 1 - 4/20 = 0.8.
-    offset = truth + np.array([1.0, 0.0])
-    scores = r2_per_axis(truth, offset)
-    assert scores[0] == pytest.approx(0.8)
-    assert scores[1] == pytest.approx(1.0)
-    # The selection metric is the arithmetic mean of the axes, not a pooled score.
-    assert mean_r2(truth, offset) == pytest.approx(0.9)
-
-
-def test_axes_are_scored_independently() -> None:
-    truth = np.array([[0.0, 0.0], [1.0, 1.0], [2.0, 2.0], [3.0, 3.0]])
-    # Perfect on the first axis, mean-only on the second.
-    predicted = np.column_stack([truth[:, 0], np.full(4, truth[:, 1].mean())])
-
-    scores = r2_per_axis(truth, predicted)
-
-    assert scores[0] == pytest.approx(1.0)
-    assert scores[1] == pytest.approx(0.0)
-    assert mean_r2(truth, predicted) == pytest.approx(0.5)
-
-
-def test_non_finite_predictions_are_refused() -> None:
-    truth = np.array([[0.0, 1.0], [1.0, 2.0], [2.0, 3.0]])
-    predicted = truth.copy()
-    predicted[1, 0] = np.nan
-
-    with pytest.raises(SelectionError, match="non-finite"):
-        r2_per_axis(truth, predicted)
 
 
 def test_the_clear_winner_is_selected() -> None:

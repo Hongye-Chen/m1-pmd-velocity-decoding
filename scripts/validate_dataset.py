@@ -323,8 +323,8 @@ def build_summary(
             "end_s": float(timestamps[-1]),
             "duration_s": float(timestamps[-1] - timestamps[0]),
             "median_step_s": float(np.median(steps)),
-            # Derived from the median step, which is recorded above at full
-            # precision; the trailing digits here would only echo float noise.
+            # Rounded because the trailing digits would only echo float noise; the
+            # median step itself is recorded above at full precision.
             "sampling_rate_hz": round(float(1.0 / np.median(steps)), 2),
             "series_sharing_timebase": list(session.timestamps_shared_by),
         },

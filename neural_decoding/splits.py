@@ -1,11 +1,9 @@
 """Trial split assignment and the frozen eligibility rules for the session.
 
-Splits are assigned from the original NWB trial row and never from a filtered or
-renumbered table. Eligibility is evaluated afterwards and only ever removes trials,
-so dropping a trial can never move another trial into a different split. Getting
-this order wrong would leak held-out trials into training without any visible
-failure, which is why the row assignment and the filtering live in separate,
-independently testable functions.
+Splits are assigned from the original NWB trial row, never from a filtered or
+renumbered table. Eligibility is evaluated afterwards and only removes trials, so
+dropping one can never move another into a different split. Reversing that order
+would leak held-out trials into training without any visible failure.
 """
 
 from __future__ import annotations
@@ -171,7 +169,7 @@ def split_row_sets(table: pd.DataFrame) -> dict[str, set[int]]:
 def check_split_integrity(
     table: pd.DataFrame, *, expected_rows: Iterable[int] | None = None
 ) -> None:
-    """Raise :class:`SplitError` unless every row sits in exactly one split."""
+    """Raise ``SplitError`` unless every row sits in exactly one split."""
     duplicated = table["trial_row"][table["trial_row"].duplicated()].tolist()
     if duplicated:
         raise SplitError(f"Trial rows appear more than once: {sorted(set(duplicated))}")

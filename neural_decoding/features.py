@@ -3,38 +3,20 @@
 One sample pairs a neural reference time ``t`` with a later cursor measurement:
 
 - the history covers ``[t - 200 ms, t)`` as four chronological half-open 50 ms bins,
-  so bin 0 is the oldest and a spike falling exactly on a bin's left edge belongs to
-  that bin while a spike falling exactly on ``t`` belongs to no bin;
+  so bin 0 is the oldest and a spike falling exactly on ``t`` belongs to no bin;
 - the target is the stored cursor velocity at ``t + lag``, never before it;
-- both the whole history and the target lie inside one trial, so no window spans a
-  trial boundary.
+- both the history and the target lie inside one trial.
 
-The lag is configurable rather than fixed, because the project selects one shared
-lag from candidates using training-only cross-validation. To keep that comparison
-fair, eligibility is anchored on the *target*: a trial's usable target samples are
-those that leave room for the history of the **largest** candidate lag. Every
-candidate therefore predicts an identical set of targets in an identical order, and
-a lag can only change the neural window, never the samples being scored. Anchoring
-on the reference instead would give each lag a different target set and quietly
-reward whichever lag happened to keep the easiest samples.
+Target eligibility is anchored on the largest candidate lag rather than on each
+lag's own, so every candidate predicts an identical set of targets and a lag can
+only change the neural window, never the samples being scored.
 
-The protocol is expressed in integer milliseconds because the bin grid has to be
-exact: deriving each edge from an integer division keeps ``t - 150 ms`` at the
-nearest double to ``0.150`` instead of an accumulated sum whose rounding would make
-edge membership ambiguous.
+Times are held in integer milliseconds and windows are positioned by counting whole
+samples on the behavior grid. Comparing derived times against stored timestamps
+instead makes bin membership ambiguous and drops valid samples to rounding.
 
-For the same reason windows are positioned by counting samples on the behavior grid
-rather than by comparing derived times against stored timestamps. Asking for the
-first sample at or after ``trial_start + 0.200`` silently drops a valid sample
-whenever the trial starts exactly on the grid, because the float sum lands a
-fraction of a nanosecond above the stored timestamp. Counting whole samples from the
-first in-trial sample is exact.
-
-Normalization may only be fitted on training data, including whole-trial training
-subsets used as cross-validation folds. That restriction is enforced rather than
-documented, because a reversed lag, a window crossing a trial boundary, or
-statistics fitted on assessment data would all raise the reported score instead of
-failing.
+Normalization may only be fitted on training data, including the whole-trial subsets
+used as cross-validation folds.
 """
 
 from __future__ import annotations
@@ -135,8 +117,7 @@ class FeatureSet:
     """Causal samples for one lag, in deterministic trial-then-time order.
 
     ``counts`` is ``(n_samples, n_bins, n_units)`` with bin 0 the oldest. Flattening
-    it with :attr:`flat_counts` yields bin-major columns, which is the layout the
-    regression models consume.
+    it with ``flat_counts`` yields the bin-major columns the regression models take.
 
     ``eligibility_lag_ms`` records the lag whose history requirement defined the
     target set. Feature sets sharing a split and an eligibility lag hold identical
@@ -512,9 +493,8 @@ def subset_by_trials(
 ) -> FeatureSet:
     """Return the samples belonging to the given whole trials.
 
-    Selection is by trial, never by sample, so a cross-validation fold can never cut
-    through the middle of a trial and leave correlated neighbours on both sides of
-    the boundary.
+    Selection is by trial, never by sample, so a fold cannot cut through a trial and
+    leave correlated neighbours on both sides of the boundary.
     """
     requested = {int(row) for row in trial_rows}
     if not requested:
@@ -546,10 +526,9 @@ def fit_normalization(
 ) -> Normalization:
     """Fit standardization statistics on training data.
 
-    Whole-trial training subsets are accepted so that a cross-validation fold can be
-    standardized with its own fold-training statistics. Any other split is refused,
-    because letting validation or held-out samples influence the model input would
-    inflate the reported score without failing.
+    Whole-trial training subsets are accepted so a fold can be standardized with its
+    own fold-training statistics. Any other split is refused, because statistics
+    drawn from an evaluation split inflate the reported score without failing.
     """
     if feature_set.split != TRAIN:
         raise FeatureError(
@@ -650,10 +629,9 @@ def _target_indices(
 ) -> np.ndarray:
     """Return target sample indices usable by every candidate lag in one trial.
 
-    The bounds are integer sample positions. The first usable target leaves room for
-    both the eligibility lag and a whole history before it, and the last one is the
-    final sample inside the trial. Because the bounds ignore the individual lag, all
-    candidates receive the same targets.
+    The first usable target leaves room for both the eligibility lag and a whole
+    history before it; the last is the final sample inside the trial. The bounds
+    ignore the individual lag, so all candidates receive the same targets.
     """
     first_in_trial = int(np.searchsorted(timestamps, trial_start, side="left"))
     last_in_trial = int(np.searchsorted(timestamps, trial_stop, side="right")) - 1

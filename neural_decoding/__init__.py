@@ -1,7 +1,8 @@
 """Offline decoding of two-dimensional cursor velocity from M1/PMd spiking activity.
 
 This package holds the reusable building blocks shared by the project scripts and
-tests: configuration loading, logging setup, and deterministic seeding.
+tests: configuration, logging, seeding, session loading, trial splits, feature
+construction, lag selection, metrics, and decoders.
 """
 
 from neural_decoding.config import (

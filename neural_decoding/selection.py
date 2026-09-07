@@ -1,24 +1,13 @@
 """Training-only grouped cross-validation for lag and Ridge-alpha selection.
 
-The project needs one shared neural-to-target lag for every later decoder. It is
-chosen here with cross-validation over eligible training trials only, so validation
-and held-out data stay untouched by the decision.
+The one shared neural-to-target lag used by every later decoder is chosen here from
+eligible training trials only, so validation and held-out data stay untouched.
 
-Three properties make the comparison trustworthy, and each is enforced rather than
-assumed:
-
-- trials are grouped into contiguous folds and never split, because samples 10 ms
-  apart inside one reach are almost identical and splitting a trial would leave
-  near-duplicates on both sides of the fold boundary;
-- normalization is fitted on each fold's training trials and applied unchanged to
-  its assessment trials, so a fold is never standardized using its own statistics;
-- every candidate lag is scored on the same target samples, which the feature
-  pipeline guarantees and this module re-checks before scoring anything.
-
-Out-of-fold predictions are written into a preallocated array at each sample's
-original position. That makes the concatenated result ordered by construction, and
-it turns "every sample was assessed exactly once" into a fact that can be verified
-by looking for unfilled entries rather than a property that has to be trusted.
+Three properties are enforced rather than assumed: trials are grouped into
+contiguous folds and never split, since samples 10 ms apart inside one reach are
+near-duplicates; normalization is fitted per fold-training set and applied unchanged
+to that fold's assessment trials; and every candidate lag is scored on the same
+target samples.
 
 The Ridge models fitted here are temporary selection instruments and are discarded.
 The official models are fitted later on the complete training set.
@@ -39,6 +28,7 @@ from neural_decoding.features import (
     subset_by_trials,
 )
 from neural_decoding.logging_utils import get_logger
+from neural_decoding.metrics import r2_per_axis
 
 __all__ = [
     "N_GROUPS",
@@ -53,8 +43,6 @@ __all__ = [
     "contiguous_trial_groups",
     "cross_validate",
     "make_folds",
-    "mean_r2",
-    "r2_per_axis",
     "select_candidate",
 ]
 
@@ -64,8 +52,7 @@ RIDGE_ALPHAS: tuple[float, ...] = (0.1, 1.0, 10.0, 100.0, 1000.0, 10000.0)
 N_GROUPS = 5
 TIE_TOLERANCE = 1e-12
 
-# Cholesky is requested explicitly rather than left to the solver heuristic, so the
-# selection does not silently change method with a different data shape or version.
+# Named explicitly so the fit does not change method with the solver heuristic.
 _RIDGE_SOLVER = "cholesky"
 
 
@@ -141,9 +128,8 @@ def contiguous_trial_groups(
 ) -> list[tuple[int, ...]]:
     """Split trial rows into contiguous groups of near-equal size.
 
-    Rows are sorted first, so groups are chronological blocks of whole trials. When
-    the count does not divide evenly the earliest groups take the extra trial, which
-    keeps the division deterministic.
+    Rows are sorted first, so groups are chronological blocks of whole trials, and
+    the earliest groups take any remainder.
     """
     if n_groups <= 0:
         raise SelectionError(f"n_groups must be positive, got {n_groups}.")
@@ -169,36 +155,6 @@ def make_folds(trial_rows: Iterable[int], n_groups: int = N_GROUPS) -> list[Fold
             Fold(index=index, training_rows=tuple(sorted(training)), assessment_rows=assessment)
         )
     return folds
-
-
-def r2_per_axis(y_true: np.ndarray, y_pred: np.ndarray) -> np.ndarray:
-    """Return the coefficient of determination for each target axis.
-
-    The total sum of squares uses the mean of the supplied true values, so the score
-    is relative to predicting that set's own mean.
-    """
-    true = np.asarray(y_true, dtype=np.float64)
-    predicted = np.asarray(y_pred, dtype=np.float64)
-    if true.shape != predicted.shape:
-        raise SelectionError(
-            f"Cannot score predictions of shape {predicted.shape} against targets of "
-            f"shape {true.shape}."
-        )
-    if true.ndim != 2 or true.shape[0] < 2:
-        raise SelectionError("Scoring needs at least two samples with one row per sample.")
-    if not np.all(np.isfinite(predicted)):
-        raise SelectionError("Predictions contain non-finite values.")
-
-    residual = np.square(true - predicted).sum(axis=0)
-    total = np.square(true - true.mean(axis=0)).sum(axis=0)
-    if np.any(total <= 0.0):
-        raise SelectionError("A target axis has no variance, so its score is undefined.")
-    return 1.0 - residual / total
-
-
-def mean_r2(y_true: np.ndarray, y_pred: np.ndarray) -> float:
-    """Return the arithmetic mean of the per-axis scores, the selection metric."""
-    return float(r2_per_axis(y_true, y_pred).mean())
 
 
 def cross_validate(
@@ -344,10 +300,9 @@ def cross_validate(
 def select_candidate(candidates: Sequence[CandidateResult]) -> CandidateResult:
     """Return the winning candidate under the frozen tie-breaking rules.
 
-    Highest out-of-fold mean score wins. Scores within :data:`TIE_TOLERANCE` of the
-    best are treated as tied, and among those the smaller lag wins, then the larger
-    alpha. Preferring the smaller lag keeps the shortest neural window that performs
-    equally well, and preferring the larger alpha keeps the more regularized model.
+    Highest out-of-fold mean score wins. Scores within ``TIE_TOLERANCE`` of the best
+    are treated as tied, and among those the smaller lag wins, then the larger
+    alpha: the shortest neural window and the more regularized model.
     """
     if not candidates:
         raise SelectionError("There are no candidates to select from.")

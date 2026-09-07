@@ -1,16 +1,10 @@
 """Synthetic tests for the causal feature protocol and lag selection support.
 
 Every defect guarded here would raise the reported score rather than fail: a
-reversed lag predicts the past from the future, a window crossing a trial boundary
-mixes unrelated reaches, candidate lags scored on different target sets make the
-comparison meaningless, and statistics fitted on an assessment fold leak it into
-the model input. None of them raises an exception on its own.
-
-The inputs are small hand-built timelines whose correct answer is known
-independently. Bin-edge cases are placed at the edges the specification actually
-computes, not at decimal literals, because a literal such as ``1.15`` is not the
-same double as ``1.21 - 0.05`` and would make the assertion test rounding instead
-of the half-open rule.
+reversed lag, a window crossing a trial boundary, candidate lags scored on different
+target sets, or statistics fitted on an assessment fold. Bin-edge cases use the
+edges the specification computes rather than decimal literals, since ``1.15`` is not
+the same double as ``1.21 - 0.05``.
 """
 
 from __future__ import annotations

@@ -5,8 +5,8 @@ simultaneously recorded primary motor and dorsal premotor sorted-unit spiking
 activity, within a single public recording session.
 
 The repository currently includes dataset validation, causal feature construction,
-and training-only lag and Ridge-alpha selection. The official decoders and final
-evaluation follow.
+training-only lag and Ridge-alpha selection, and official constant and Ridge
+validation baselines. Kalman, GRU, and final held-out evaluation follow.
 
 ## Setup
 
@@ -140,6 +140,39 @@ out-of-fold mean axis-specific R2 is 0.563601. This is a training-only selection
 diagnostic, not an official validation benchmark; the official constant and Ridge
 models are fitted and evaluated separately in the next stage.
 
+## Establish the baselines
+
+```powershell
+python -m scripts.evaluate_baselines
+```
+
+This reads the frozen lag and alpha, builds training and validation features at that
+lag, fits normalization once on the complete training set, and applies it unchanged
+to validation. It then fits a fresh constant baseline and a fresh Ridge model on the
+complete training set and scores each one a single time on validation. Nothing is
+tuned here: the configuration is read from disk rather than chosen, and the held-out
+split is not touched.
+
+Target eligibility uses the selected lag itself, so every model the project reports
+is evaluated on an identical set of validation samples. That gives 43,022 training
+samples from 123 trials and 8,183 validation samples from 24 trials.
+
+| Model | Validation R2 (x, y) | Mean R2 | Mean correlation | Mean RMSE (cm/s) |
+| --- | --- | --- | --- | --- |
+| Constant baseline | -0.000140, -0.000276 | -0.000208 | undefined | 7.457 |
+| Ridge | 0.543588, 0.552308 | **0.547948** | 0.745 | 5.014 |
+
+The constant baseline predicts the mean training velocity for every sample, so it
+uses no neural data. Its correlation is undefined rather than zero, and its score is
+what predicting a fixed velocity earns on this validation set. It is reported
+alongside the Ridge model because a decoding score means little without knowing what
+ignoring the spikes would have scored.
+
+Per-sample predictions, both fitted models, and the runtime checks are written under
+`results/baselines/`, with the metrics in `results/baseline_metrics.json`. The models
+are saved as readable JSON rather than pickled objects, and the run verifies that
+reloading them reproduces the reported predictions exactly.
+
 ## Run the tests
 
 ```powershell
@@ -154,7 +187,7 @@ command above.
 
 | Path | Contents |
 | --- | --- |
-| `neural_decoding/` | Reusable package: configuration, logging, seeding, session loading, trial splits |
+| `neural_decoding/` | Reusable package: configuration, logging, seeding, session loading, trial splits, feature construction, lag selection, metrics, decoders |
 | `configs/` | Tracked defaults, plus an untracked local override for paths |
 | `scripts/` | Runnable entry points, invoked as `python -m scripts.<name>` |
 | `tests/` | Automated tests, run with `pytest` |
