@@ -137,6 +137,7 @@ class SessionData:
     behavior_timestamps: np.ndarray
     cursor_position: np.ndarray
     cursor_velocity: np.ndarray
+    cursor_acceleration: np.ndarray
     timestamps_shared_by: tuple[str, ...]
     trials: pd.DataFrame
     trimming: TrimmingReport
@@ -237,7 +238,7 @@ def load_session(
         nwb = io.read()
         metadata = _read_metadata(nwb)
         unit_records, raw_spikes = _read_units(nwb)
-        timestamps, position, velocity, shared_by = _read_behavior(nwb)
+        timestamps, position, velocity, acceleration, shared_by = _read_behavior(nwb)
         raw_trials = _read_trials(nwb)
 
     trimming, spike_times = _trim_spikes(raw_spikes, timestamps)
@@ -267,6 +268,7 @@ def load_session(
         behavior_timestamps=timestamps,
         cursor_position=position,
         cursor_velocity=velocity,
+        cursor_acceleration=acceleration,
         timestamps_shared_by=shared_by,
         trials=trials,
         trimming=trimming,
@@ -320,7 +322,9 @@ def _read_units(nwb) -> tuple[list[dict[str, object]], list[np.ndarray]]:
     return records, spikes
 
 
-def _read_behavior(nwb) -> tuple[np.ndarray, np.ndarray, np.ndarray, tuple[str, ...]]:
+def _read_behavior(
+    nwb,
+) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, tuple[str, ...]]:
     behavior = nwb.processing.get("behavior")
     if behavior is None:
         raise DatasetError("The recording has no 'behavior' processing module.")
@@ -345,7 +349,20 @@ def _read_behavior(nwb) -> tuple[np.ndarray, np.ndarray, np.ndarray, tuple[str, 
 
     position = np.asarray(position_series.data[:], dtype=float)
     velocity = np.asarray(velocity_series.data[:], dtype=float)
-    return timestamps, position, velocity, tuple(shared)
+    acceleration = np.asarray(acceleration_series.data[:], dtype=float)
+    for name, array in (
+        ("cursor_pos", position),
+        ("cursor_vel", velocity),
+        ("cursor_acc", acceleration),
+    ):
+        if array.shape != (timestamps.size, 2):
+            raise DatasetError(
+                f"{name} has shape {array.shape}; expected ({timestamps.size}, 2) "
+                "on the shared cursor timebase."
+            )
+        if not np.all(np.isfinite(array)):
+            raise DatasetError(f"{name} contains non-finite values.")
+    return timestamps, position, velocity, acceleration, tuple(shared)
 
 
 def _read_trials(nwb) -> pd.DataFrame:
