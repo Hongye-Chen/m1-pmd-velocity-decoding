@@ -1,0 +1,165 @@
+{
+  "procedure": {
+    "name": "one official validation of the frozen clean-room Kalman decoder",
+    "configuration": "PVA / 50 ms width / 50 ms interval-end lag",
+    "training": "all 123 eligible training trials",
+    "validation": "one frozen run on the 8,183 CA-05 validation targets",
+    "selection_or_tuning": "none",
+    "acceptance": "structural gates only; performance and calibration are interpretive"
+  },
+  "provenance": {
+    "recording_sha256": "83befb05b5d265c92e03c544c420e2bc0b6c7d3248fa14492c17f39a8aa1f124",
+    "fold_assignments_sha256": "7e5469456d8c65230f3aa32a8f884197531199470bc7ec629ed19f896bf2fad5",
+    "training_target_identity_sha256": "f2607771191a0b0d8be4f5b1b65c84bf1d3b5470572f8e6e7d6d3d7044f3cc99",
+    "validation_identity_sha256": "d432513d2454389ab98f3309e38a6393ca419b26874a26e5dac3aac238bb4419",
+    "validation_truth_sha256": "6b7d71407c58ce2a88ffa0d095eaf4b157293c0a0ffa88d40ca1b2746d9a482c",
+    "validation_source_sha256": "7127fa1fcd2bceaf78983dc43bc1b55d6136126485fa7b92984fa1db2b47f556",
+    "selection_candidates_sha256": "8abc1d7ba487c8573dbadc3698e2d5a25368db3c56229e3c6e6f80eca062fb40",
+    "selection_summary_sha256": "d87ff88c90f944f0d1c7794dec317b0384f3962391f6c22c656b83a87a54318c",
+    "selected_config_sha256": "29fd1e464f7e8aae4b4212d01f9f8c6b04e8ec802249ea3bc141f27e25dc4e35",
+    "baseline_summary_sha256": "723c0df12b49a7840995f3db80e3046c3e2a472186031549d29d56c78296bcc9"
+  },
+  "validation_metrics": {
+    "n_samples": 8183,
+    "r2": {
+      "x": 0.5271211942674245,
+      "y": 0.47327310037183035
+    },
+    "r2_mean": 0.5001971473196274,
+    "pearson_r": {
+      "x": 0.730238556411039,
+      "y": 0.7107606925279645
+    },
+    "pearson_r_mean": 0.7204996244695017,
+    "rmse_cm_s": {
+      "x": 5.210889086734986,
+      "y": 5.323969109426999
+    },
+    "rmse_cm_s_mean": 5.267429098080992
+  },
+  "diagnostics": {
+    "process": {
+      "transition_design_rank": 7,
+      "transition_design_condition": 1.454943284942662,
+      "transition_spectral_radius": 0.999450183899253,
+      "process_covariance_rank": 6,
+      "process_covariance_min_eigenvalue": 1.9767196783959727e-10,
+      "process_covariance_max_eigenvalue": 0.045619126263352336,
+      "process_residual_autocorrelation_abs_max": 0.7627217715862478,
+      "process_residual_autocorrelation_by_component": [
+        0.7627217715862478,
+        0.6424575334857863,
+        0.5184945684527398,
+        0.6660421997380863,
+        0.5982057528466629,
+        0.7277823787239279
+      ]
+    },
+    "observation_fit": {
+      "observation_design_rank": 7,
+      "observation_design_condition": 1.456960393131745,
+      "observation_covariance_rank": 53,
+      "observation_covariance_min_eigenvalue": 0.5546003129396458,
+      "observation_covariance_max_eigenvalue": 2.1480145566748643,
+      "observation_covariance_condition": 3.8730857277908193,
+      "observation_covariance_shrinkage": 0.07041674460421668,
+      "observation_residual_autocorrelation_abs_max": 0.3982187797796868,
+      "count_features_at_scale_floor": 0,
+      "n_training_observations": 9022
+    },
+    "innovation": {
+      "innovation_whitened_autocorrelation_abs_max": 0.39807744222036734,
+      "innovation_whitened_squared_norm_mean": 56.48266597146789,
+      "innovation_whitened_absolute_max": 42.69834264451306,
+      "innovation_absolute_max": 42.448888988149086,
+      "innovation_covariance_min_eigenvalue_lower_bound": 0.5546003129396458
+    },
+    "calibration": {
+      "velocity_nees_mean": 3.158048569383688,
+      "velocity_nees_median": 1.689011483760158,
+      "velocity_95_ellipse_coverage": 0.8615422216790908,
+      "posterior_to_empirical_variance_ratio_x": 0.6054730097379217,
+      "posterior_to_empirical_variance_ratio_y": 0.6630800671946144,
+      "velocity_posterior_std_x": 4.054704634868118,
+      "velocity_posterior_std_y": 4.335293587425886
+    },
+    "prediction_to_target_std": {
+      "x": 0.7581212571540825,
+      "y": 0.8890615034231292
+    },
+    "recursion": {
+      "posterior_covariance_rank_min": 4,
+      "posterior_covariance_min_eigenvalue": 0.0,
+      "posterior_covariance_max_eigenvalue": 0.6077986529750097,
+      "kalman_gain_absolute_max": 0.16061337475278975,
+      "normalized_state_absolute_max": 3.4198186110748745,
+      "posterior_covariance_absolute_max": 0.5249947952400014
+    }
+  },
+  "checks": [
+    {
+      "name": "the reviewed frozen configuration was used unchanged",
+      "passed": true,
+      "detail": "PVA / 50 ms width / 50 ms lag / 10 ms cadence"
+    },
+    {
+      "name": "all final model parameters were fitted on eligible training trials",
+      "passed": true,
+      "detail": "state, process, prior, count, observation, and covariance fits use 123 training trials"
+    },
+    {
+      "name": "validation identities exactly match CA-05",
+      "passed": true,
+      "detail": "8,183 rows; identity SHA-256 d432513d2454389ab98f3309e38a6393ca419b26874a26e5dac3aac238bb4419"
+    },
+    {
+      "name": "only eligible validation trials were filtered",
+      "passed": true,
+      "detail": "24 validation trials; no held-out trial bounds were constructed"
+    },
+    {
+      "name": "validation trial IDs match the frozen recording",
+      "passed": true,
+      "detail": "trial IDs are mapped from the same 24 CA-05 trial rows"
+    },
+    {
+      "name": "every validation target received one finite prediction",
+      "passed": true,
+      "detail": "8,183 predictions in canonical order"
+    },
+    {
+      "name": "posterior and innovation covariances passed numerical gates",
+      "passed": true,
+      "detail": "minimum posterior eigenvalue 0.000e+00; innovation minimum-eigenvalue lower bound 5.546e-01"
+    },
+    {
+      "name": "saved model reload reproduces validation predictions",
+      "passed": true,
+      "detail": "prediction and velocity-covariance arrays match within 1e-12"
+    },
+    {
+      "name": "saved model preserves the frozen 53-unit order",
+      "passed": true,
+      "detail": "53 unit IDs in production loader order"
+    },
+    {
+      "name": "saved prediction artifact reproduces reported R2",
+      "passed": true,
+      "detail": "stored predictions and true velocities reproduce both axes"
+    }
+  ],
+  "all_checks_passed": true,
+  "accepted_as_official_kalman_result": true,
+  "held_out": "not constructed, filtered, or scored",
+  "artifacts": {
+    "model": "results/internal/kalman_validation/model.json",
+    "validation_predictions": "results/internal/kalman_validation/validation_predictions.csv",
+    "configuration": "results/internal/kalman_validation/configuration.json",
+    "summary": "results/internal/kalman_validation/summary.json"
+  },
+  "artifact_hashes": {
+    "model_sha256": "e2fdb7ad42549c56ef8ac9a8b26d0f8bc9f69f5561cb9fb92ace8ce58eb14850",
+    "validation_predictions_sha256": "37aaf40b4b24901dcaa42cc2feee55cbdb00664a21f6039963bba6363907a9fd",
+    "configuration_sha256": "d45457805e497359d55473bf8faeb98a489ed8cc617b5d8bd4916c1ff9e9e3b4"
+  }
+}

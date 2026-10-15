@@ -290,8 +290,10 @@ def build_trial_bounds(
     timestamps: np.ndarray,
     trials: pd.DataFrame,
     trial_rows: Iterable[int],
+    *,
+    required_split: str = "train",
 ) -> dict[int, TrialBounds]:
-    """Map requested eligible training rows to inclusive behavior-grid bounds."""
+    """Map requested eligible rows from one declared split to behavior-grid bounds."""
     times = np.asarray(timestamps, dtype=np.float64)
     if times.ndim != 1 or times.size < 2 or not np.all(np.isfinite(times)):
         raise JointDecoderError("Behavior timestamps must be a finite one-dimensional grid.")
@@ -308,8 +310,10 @@ def build_trial_bounds(
         if row not in table.index:
             raise JointDecoderError(f"Trial row {row} is absent from the trial table.")
         record = table.loc[row]
-        if str(record["split"]) != "train" or not bool(record["eligible"]):
-            raise JointDecoderError(f"Trial row {row} is not eligible training data.")
+        if str(record["split"]) != required_split or not bool(record["eligible"]):
+            raise JointDecoderError(
+                f"Trial row {row} is not eligible {required_split} data."
+            )
         first = int(np.searchsorted(times, float(record["start_time"]), side="left"))
         last = int(np.searchsorted(times, float(record["stop_time"]), side="right")) - 1
         if first < 0 or last >= times.size or last < first:

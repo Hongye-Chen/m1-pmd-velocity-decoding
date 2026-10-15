@@ -1,0 +1,177 @@
+{
+  "procedure": {
+    "name": "clean-room joint causal decoder selection",
+    "split_used": "eligible training trials only",
+    "state_grid": [
+      "V",
+      "PV",
+      "VA",
+      "PVA"
+    ],
+    "neural_width_grid_ms": [
+      10,
+      20,
+      50
+    ],
+    "interval_end_lag_grid_ms": [
+      0,
+      50,
+      100
+    ],
+    "state_and_output_cadence_ms": 10,
+    "folds": 5,
+    "temporary_fits_per_run": 180,
+    "transition": "full affine least squares in fold-normalized state",
+    "process_covariance": "full sample residual covariance (n-1 divisor); only eigenvalues within 256 * machine-epsilon * dimension * max spectral scale below zero are projected to zero; legitimate rank deficiency retained",
+    "observation": "affine count model in fold-normalized count coordinates",
+    "observation_covariance": "full Oracle Approximating Shrinkage covariance toward the scaled-identity target; analytic strength, not tuned",
+    "recursion": "stable low-rank information update algebraically equivalent to the Kalman update; no explicit matrix inverse",
+    "selection_metric": "arithmetic mean of horizontal and vertical R2 on concatenated out-of-fold predictions",
+    "tie_breaking": [
+      "highest finite concatenated mean R2",
+      "within 1e-12, lower state dimension",
+      "then narrower neural width",
+      "then smaller interval-end lag",
+      "then lexical state name"
+    ],
+    "whiteness_and_calibration": "reported diagnostics, not hard gates"
+  },
+  "provenance": {
+    "recording": {
+      "name": "sub-T_ses-RT-20130906_behavior+ecephys.nwb",
+      "sha256": "83befb05b5d265c92e03c544c420e2bc0b6c7d3248fa14492c17f39a8aa1f124"
+    },
+    "fold_assignments": {
+      "path": "results/selection/fold_assignments.csv",
+      "sha256": "7e5469456d8c65230f3aa32a8f884197531199470bc7ec629ed19f896bf2fad5",
+      "group_sizes": [
+        25,
+        25,
+        25,
+        24,
+        24
+      ]
+    },
+    "official_training_targets": {
+      "reconstructed_from": "the frozen Step 5 200 ms history plus selected 50 ms lag eligibility rule",
+      "step5_summary_path": "results/baseline_summary.json",
+      "source_sha256": "723c0df12b49a7840995f3db80e3046c3e2a472186031549d29d56c78296bcc9",
+      "identity_sha256": "f2607771191a0b0d8be4f5b1b65c84bf1d3b5470572f8e6e7d6d3d7044f3cc99",
+      "samples": 43022,
+      "trials": 123
+    },
+    "validation_stream": "not constructed, filtered, or scored",
+    "held_out_stream": "not constructed, filtered, or scored"
+  },
+  "grid": {
+    "candidates_expected": 36,
+    "candidates_recorded": 36,
+    "candidates_passing_integrity": 36
+  },
+  "selected": {
+    "state_name": "PVA",
+    "state_dimension": 6,
+    "neural_width_ms": 50,
+    "interval_end_lag_ms": 50,
+    "out_of_fold_r2_x": 0.5445443575050783,
+    "out_of_fold_r2_y": 0.4692727091383404,
+    "out_of_fold_r2_mean": 0.5069085333217094,
+    "pearson_r_mean": 0.7173022540902816,
+    "rmse_cm_s_mean": 5.2625006282621225,
+    "compact_diagnostics": {
+      "process_residual_autocorrelation_abs_max": 0.7671501215972817,
+      "innovation_whitened_autocorrelation_abs_max": 0.35167783189292157,
+      "process_covariance_rank_min": 6.0,
+      "observation_covariance_min_eigenvalue_min": 0.5448371480666284,
+      "posterior_covariance_min_eigenvalue_min": 0.0,
+      "velocity_nees_mean": 3.1792876151590663,
+      "velocity_95_ellipse_coverage": 0.8563060759611362,
+      "kalman_gain_absolute_max": 0.16542509395365676
+    }
+  },
+  "ranking_preview": [
+    {
+      "rank": 1,
+      "state_name": "PVA",
+      "neural_width_ms": 50,
+      "interval_end_lag_ms": 50,
+      "out_of_fold_r2_mean": 0.5069085333217094
+    },
+    {
+      "rank": 2,
+      "state_name": "VA",
+      "neural_width_ms": 50,
+      "interval_end_lag_ms": 50,
+      "out_of_fold_r2_mean": 0.5058727221198323
+    },
+    {
+      "rank": 3,
+      "state_name": "PVA",
+      "neural_width_ms": 50,
+      "interval_end_lag_ms": 0,
+      "out_of_fold_r2_mean": 0.49774888924137434
+    },
+    {
+      "rank": 4,
+      "state_name": "VA",
+      "neural_width_ms": 50,
+      "interval_end_lag_ms": 0,
+      "out_of_fold_r2_mean": 0.4950213556463051
+    },
+    {
+      "rank": 5,
+      "state_name": "PVA",
+      "neural_width_ms": 50,
+      "interval_end_lag_ms": 100,
+      "out_of_fold_r2_mean": 0.47961046625060916
+    }
+  ],
+  "checks": [
+    {
+      "name": "tracked folds cover five complete disjoint groups",
+      "passed": true,
+      "detail": "groups sized [25, 25, 25, 24, 24]; SHA-256 7e5469456d8c65230f3aa32a8f884197531199470bc7ec629ed19f896bf2fad5"
+    },
+    {
+      "name": "only eligible training trials were prepared",
+      "passed": true,
+      "detail": "123 eligible training rows; validation and held-out streams were not constructed"
+    },
+    {
+      "name": "official Step 5 target identities are fixed",
+      "passed": true,
+      "detail": "43022 targets; identity SHA-256 f2607771191a0b0d8be4f5b1b65c84bf1d3b5470572f8e6e7d6d3d7044f3cc99"
+    },
+    {
+      "name": "the complete frozen grid was evaluated",
+      "passed": true,
+      "detail": "36 candidates and 180 fold fits attempted"
+    },
+    {
+      "name": "candidate outputs satisfy recursive numerical and isolation gates",
+      "passed": true,
+      "detail": "36 of 36 candidates passed"
+    },
+    {
+      "name": "the frozen deterministic ranking rule was applied",
+      "passed": true,
+      "detail": "PVA, 50 ms, 50 ms lag"
+    },
+    {
+      "name": "the winner has strictly positive finite R2 on both axes",
+      "passed": true,
+      "detail": "x 0.544544, y 0.469273"
+    },
+    {
+      "name": "a complete repeat reproduced the in-memory selection exactly",
+      "passed": true,
+      "detail": "all 36 candidate rows, compact diagnostics, checks, and selected identity matched exactly"
+    }
+  ],
+  "all_checks_passed": true,
+  "artifacts": {
+    "candidates": "results/internal/kalman_decoder_selection/candidates.csv",
+    "summary": "results/internal/kalman_decoder_selection/summary.json",
+    "selected_config": "results/internal/kalman_decoder_selection/selected_config.json"
+  }
+}

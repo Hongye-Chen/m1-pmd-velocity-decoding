@@ -1,0 +1,58 @@
+{
+  "state_name": "PVA",
+  "state_components": [
+    "px",
+    "py",
+    "vx",
+    "vy",
+    "ax",
+    "ay"
+  ],
+  "neural_width_ms": 50,
+  "interval_end_lag_ms": 50,
+  "state_and_output_cadence_ms": 10,
+  "timing_convention": "at state timestamp t consume one fresh 53-unit count from [t-L-W, t-L); tile intervals from the first behavior-grid point, update every W/10 steps, and predict only between updates",
+  "transition_estimator": "full affine stable least squares",
+  "normalization": {
+    "state": "fold-training population mean and standard deviation (ddof=0); reject a component below 1e-8",
+    "neural_counts": "fold-training population mean and standard deviation (ddof=0); replace a scale below 1e-8 with 1"
+  },
+  "process_covariance_estimator": {
+    "method": "full fold-training transition-residual sample covariance",
+    "divisor": "n_residuals - 1",
+    "symmetrization": "(Q + Q.T) / 2",
+    "negative_eigenvalue_policy": "raise below -tol; project values in [-tol, 0) to zero",
+    "tolerance": "256 * machine_epsilon * matrix_dimension * max(max_abs_eigenvalue, 1)",
+    "rank_deficiency": "preserved"
+  },
+  "observation_estimator": "full affine stable least squares",
+  "observation_covariance_estimator": {
+    "method": "Oracle Approximating Shrinkage",
+    "implementation": "sklearn.covariance.oas",
+    "assume_centered_residuals": true,
+    "target": "scaled identity",
+    "shrinkage_strength": "analytic fold-training estimate, not tuned",
+    "requirement": "finite, symmetric, and positive definite"
+  },
+  "covariance_recursion": {
+    "measurement_update": "stable low-rank information form algebraically equivalent to the Kalman update",
+    "explicit_matrix_inverse": false,
+    "posterior_policy": "symmetrize; reject eigenvalues below the process-covariance tolerance formula; project only roundoff negatives"
+  },
+  "initialization": {
+    "position": "recorded once at trial start for PV/PVA; unavailable thereafter",
+    "velocity_and_acceleration": "fold-training initial prior; recorded assessment values never supplied",
+    "known_position_cross_covariance": 0.0,
+    "prior_covariance_regularization": "fixed 1e-6 times max(mean diagonal covariance, 1)",
+    "reset_each_trial": true
+  },
+  "fit_instructions": "Refit every normalization, prior, transition, covariance, and observation map on all eligible training trials before one official validation run; do not reuse cross-validation parameters.",
+  "selection_evidence": {
+    "out_of_fold_r2_x": 0.5445443575050783,
+    "out_of_fold_r2_y": 0.4692727091383404,
+    "out_of_fold_r2_mean": 0.5069085333217094,
+    "recording_sha256": "83befb05b5d265c92e03c544c420e2bc0b6c7d3248fa14492c17f39a8aa1f124",
+    "fold_assignments_sha256": "7e5469456d8c65230f3aa32a8f884197531199470bc7ec629ed19f896bf2fad5",
+    "training_target_identity_sha256": "f2607771191a0b0d8be4f5b1b65c84bf1d3b5470572f8e6e7d6d3d7044f3cc99"
+  }
+}

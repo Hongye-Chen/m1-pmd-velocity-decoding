@@ -140,6 +140,24 @@ def test_schedule_alignment_is_half_open_and_never_reuses_spikes() -> None:
     assert len(keys) == len(set(keys))
 
 
+def test_fifty_ms_width_and_lag_have_exact_interval_phase() -> None:
+    timestamps = np.arange(16, dtype=np.float64) / 100.0
+    trial_bounds = _bounds(0, 0, 15, timestamps)
+    # The spike on 50 ms belongs only to the second fresh interval.
+    schedule = build_scheduled_observations(
+        timestamps,
+        [np.array([0.0, 0.049999999, 0.05, 0.099999999, 0.10])],
+        {0: trial_bounds},
+        width_ms=50,
+        lag_ms=50,
+    )
+
+    assert schedule.interval_start_time.tolist() == [0.0, 0.05]
+    assert schedule.interval_end_time.tolist() == [0.05, 0.10]
+    assert schedule.state_index.tolist() == [10, 15]
+    assert schedule.counts[:, 0].tolist() == [2, 2]
+
+
 @pytest.mark.parametrize(
     ("width_ms", "expected_offsets"),
     [(20, [2, 4, 6, 8, 10]), (50, [5, 10])],

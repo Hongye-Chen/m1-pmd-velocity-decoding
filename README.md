@@ -1,41 +1,34 @@
 # Neural decoding of cursor velocity from M1 and PMd spiking activity
 
-Offline decoding of two-dimensional cursor velocity from the causal history of
-simultaneously recorded primary motor and dorsal premotor sorted-unit spiking
-activity, within a single public recording session.
+This project decodes two-dimensional cursor velocity from M1 and PMd sorted-unit
+spiking activity in one public recording session. The implemented models use only
+causal neural inputs and preserve complete trials throughout selection and
+evaluation.
 
-The repository currently includes dataset validation, causal feature construction,
-training-only lag and Ridge-alpha selection, and official constant and Ridge
-validation baselines. Kalman, GRU, and final held-out evaluation follow.
+## Current validation results
 
-## Setup
+The official validation set contains 8,183 samples from 24 trials. Both neural
+decoders used the same 123 eligible training trials and were evaluated on
+identical validation targets.
 
-Python 3.11 is recommended. Create a fresh conda environment:
+| Model | Validation R² (x, y) | Mean R² | Mean correlation | Mean RMSE (cm/s) |
+| --- | --- | --- | --- | --- |
+| Constant baseline | -0.000140, -0.000276 | -0.000208 | undefined | 7.457 |
+| Ridge | 0.543588, 0.552308 | **0.547948** | 0.745 | 5.014 |
+| Kalman | 0.527121, 0.473273 | **0.500197** | 0.720 | 5.267 |
 
-```powershell
-conda env create -f environment.yml
-conda activate neural-decoding
-```
+The constant model predicts the mean training velocity and uses no neural data.
+Compact, machine-readable evidence is available in
+[`results/baseline_summary.json`](results/baseline_summary.json),
+[`results/kalman_decoder_selection/`](results/kalman_decoder_selection/), and
+[`results/kalman_validation/`](results/kalman_validation/).
 
-Alternatively, use a virtual environment:
+The GRU comparison and held-out evaluation are not yet complete. Held-out trials
+remain unopened.
 
-```powershell
-py -3.11 -m venv .venv
-.\.venv\Scripts\Activate.ps1
-python -m pip install --upgrade pip
-python -m pip install -r requirements.txt
-```
+## Data
 
-CPU execution is sufficient for the current workflow. GPU acceleration is optional
-for later deep-learning stages; install a PyTorch build appropriate for the local
-CUDA setup using the official PyTorch installation instructions.
-
-Run every command below from the repository root with the created environment
-active.
-
-## Obtain the recording
-
-The neural recording is not part of this repository. It is one public NWB file:
+The NWB recording is not included in the repository:
 
 | Field | Value |
 | --- | --- |
@@ -49,129 +42,65 @@ The neural recording is not part of this repository. It is one public NWB file:
 
 Download it to any location outside the repository.
 
-## Point the project at the recording
+## Setup
+
+Python 3.11 is recommended:
+
+```powershell
+conda env create -f environment.yml
+conda activate neural-decoding
+```
 
 Create `configs/local.yaml`, which is untracked so machine-specific paths never
-enter version control, and give it the absolute path to the downloaded file:
+enter version control:
 
 ```yaml
 paths:
   nwb_file: "D:/path/to/sub-T_ses-RT-20130906_behavior+ecephys.nwb"
 ```
 
-A single run can instead be pointed at the file through an environment variable,
-which takes precedence over the local file:
+For a single run, the environment variable below overrides the local file:
 
 ```powershell
 $env:NEURAL_DECODING_NWB_FILE = "D:/path/to/sub-T_ses-RT-20130906_behavior+ecephys.nwb"
 ```
 
-Configuration is merged from `configs/default.yaml`, then `configs/local.yaml`, then
-`NEURAL_DECODING_NWB_FILE`.
+CPU execution is sufficient through the Kalman workflow. GPU support is optional
+for the later GRU experiment.
 
-## Verify the environment
+## Methods
 
-```powershell
-python -m scripts.check_environment
-```
-
-The check imports every direct dependency and the project package, reports installed
-versions, and shows whether the configured recording and CUDA are available. It
-exits non-zero if a required dependency cannot be imported.
-
-## Validate the recording
-
-```powershell
-python -m scripts.validate_dataset
-```
-
-This verifies the configured file against the frozen dataset decision, then writes
-the unit manifest, the trial and split manifest, and a validation summary under
-`results/`. It checks the file size and SHA-256, the sorted unit count and cortical
-area assignment, the cursor timebase and sample count, spike trimming to the common
-neural-behavioral interval, and the trial split and eligibility counts. It exits 1
-if a check fails and 2 if the recording is not configured or is a different file.
-
-## Build the causal features
-
-```powershell
-python -m scripts.build_features
-python -m scripts.build_features --lags 0 100 200
-```
+### Ridge
 
 Each sample pairs 200 ms of causal spike history, as four chronological half-open
-50 ms bins across all 53 units, with the cursor velocity a fixed lag later. Both the
-history and the target must lie inside a single trial.
+50 ms bins across all 53 units, with the cursor velocity at a later target time.
+Five grouped training folds selected a 50 ms lag and Ridge alpha 10,000. The
+temporary cross-validation models were discarded; the reported Ridge model was
+fitted on the complete training set and evaluated once on validation.
 
-The neural-to-target lag is not fixed in advance. The command builds one feature set
-per candidate lag from `features.candidate_lags_ms` in `configs/default.yaml`, or per
-lag given on the command line. Target eligibility is anchored on the largest
-candidate, so every lag is scored on an identical set of target samples in an
-identical order and only the neural window moves. That keeps the later comparison
-between lags fair rather than rewarding whichever lag retained the easiest samples.
+### Kalman decoder
 
-The command writes the feature arrays, per-sample manifests, and the full-training
-normalization for each lag, then validates the result and exits 1 if a check fails.
-Only training features are built here: the lag is chosen from training data alone by
-cross-validation, so no validation or held-out artifact is produced.
+The training-only search compares four state definitions (`V`, `PV`, `VA`, and
+`PVA`), neural count widths of 10, 20, and 50 ms, and interval-end lags of 0, 50,
+and 100 ms. Each candidate uses fresh non-overlapping spike counts and is assessed
+recursively without assessment velocity or acceleration. Position is
+available only once at trial initialization when it belongs to the state.
 
-## Select the lag and Ridge alpha
+The selected `PVA / 50 ms width / 50 ms lag` configuration achieved a mean
+out-of-fold R² of 0.506909. It was refitted on the complete training set and
+evaluated once on the same validation targets as Ridge. The frozen fitted model is
+included at [`results/kalman_validation/model.json`](results/kalman_validation/model.json).
+Sample-level validation predictions remain omitted; their hash is retained in the
+compact validation summary.
 
-```powershell
-python -m scripts.select_lag_alpha
-```
+## Limitations
 
-This chooses the one shared neural-to-target lag used by every later decoder, along
-with a Ridge penalty, using only the eligible training trials. The 123 training
-trials are sorted by original row and divided into five contiguous groups; each fold
-trains on four groups and is assessed on the fifth, with normalization fitted on the
-fold's training trials and applied unchanged to its assessment trials. Out-of-fold
-predictions are concatenated in original sample order, and the selection score is
-the mean of the per-axis coefficients of determination.
-
-Validation and held-out trials are not read. The Ridge models fitted here are
-temporary selection instruments and are discarded; the official models are fitted
-separately on the complete training set. The outcome is written to
-`results/selected_configuration.json`, with the full grid, per-fold diagnostics, and
-ranking under `results/selection/`.
-
-The frozen selection is a **50 ms lag** with **Ridge alpha 10000**. Its concatenated
-out-of-fold mean axis-specific R2 is 0.563601. This is a training-only selection
-diagnostic, not an official validation benchmark; the official constant and Ridge
-models are fitted and evaluated separately in the next stage.
-
-## Establish the baselines
-
-```powershell
-python -m scripts.evaluate_baselines
-```
-
-This reads the frozen lag and alpha, builds training and validation features at that
-lag, fits normalization once on the complete training set, and applies it unchanged
-to validation. It then fits a fresh constant baseline and a fresh Ridge model on the
-complete training set and scores each one a single time on validation. Nothing is
-tuned here: the configuration is read from disk rather than chosen, and the held-out
-split is not touched.
-
-Target eligibility uses the selected lag itself, so every model the project reports
-is evaluated on an identical set of validation samples. That gives 43,022 training
-samples from 123 trials and 8,183 validation samples from 24 trials.
-
-| Model | Validation R2 (x, y) | Mean R2 | Mean correlation | Mean RMSE (cm/s) |
-| --- | --- | --- | --- | --- |
-| Constant baseline | -0.000140, -0.000276 | -0.000208 | undefined | 7.457 |
-| Ridge | 0.543588, 0.552308 | **0.547948** | 0.745 | 5.014 |
-
-The constant baseline predicts the mean training velocity for every sample, so it
-uses no neural data. Its correlation is undefined rather than zero, and its score is
-what predicting a fixed velocity earns on this validation set. It is reported
-alongside the Ridge model because a decoding score means little without knowing what
-ignoring the spikes would have scored.
-
-Per-sample predictions, both fitted models, and the runtime checks are written under
-`results/baselines/`, with the metrics in `results/baseline_metrics.json`. The models
-are saved as readable JSON rather than pickled objects, and the run verifies that
-reloading them reproduces the reported predictions exactly.
+This is an offline, within-session result from one subject and one recording.
+Neither cross-session nor cross-subject generalization has been tested. The
+Kalman posterior is overconfident—its nominal 95% velocity ellipse covered 86.15%
+of validation targets—and its process and innovation residuals remain temporally
+correlated. It should be treated as a causal linear decoder, not as a fully
+calibrated probabilistic model.
 
 ## Run the tests
 
@@ -191,9 +120,7 @@ command above.
 | `configs/` | Tracked defaults, plus an untracked local override for paths |
 | `scripts/` | Runnable entry points, invoked as `python -m scripts.<name>` |
 | `tests/` | Automated tests, run with `pytest` |
-| `results/` | Generated metrics, predictions, and manifests |
+| `results/` | Compact tracked metrics, selections, validation summaries, and manifests; large generated artifacts remain ignored |
 | `reports/` | Generated figures and report tables |
 
-`requirements.txt` lists the direct dependencies, pinned to the versions the
-project was verified against. It doubles as the record of the audited environment
-and is not an installation target for the shared `BCI` environment.
+`requirements.txt` records the dependency versions used to verify the project.
