@@ -61,6 +61,7 @@ weights/
 *.ckpt
 *.onnx
 *.engine
+!results/gru_architecture_selection/checkpoint_seed*.pt
 
 # Bulk generated arrays and intermediate artifacts.
 # Compact machine-readable results such as JSON, CSV, and figures stay eligible.

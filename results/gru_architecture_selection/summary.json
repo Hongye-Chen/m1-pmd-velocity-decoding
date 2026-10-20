@@ -1,0 +1,626 @@
+{
+  "procedure": {
+    "name": "GRU architecture and learning-rate selection",
+    "development_set": "validation, used for early stopping and selection",
+    "fixed": "every input-selection rule except layer count, hidden size, learning rate, and dropout",
+    "grid": {
+      "hidden_sizes": [
+        32,
+        64,
+        128
+      ],
+      "learning_rates": [
+        0.001,
+        0.0003
+      ],
+      "dropout_by_num_layers": {
+        "1": [
+          0.0
+        ],
+        "2": [
+          0.0,
+          0.2
+        ]
+      },
+      "seeds": [
+        0,
+        1,
+        2
+      ]
+    },
+    "runs": {
+      "configurations": 18,
+      "entries": 54,
+      "new_runs": 51,
+      "reused_runs": 3,
+      "input_selection_runs": 18,
+      "unique_training_runs": 69
+    },
+    "ranking": "arithmetic mean of seed-level mean R2; within the tie tolerance lower seed sample SD, then fewer layers, smaller hidden size, smaller dropout, and smaller learning rate",
+    "tie_tolerance": 1e-06
+  },
+  "input_selection": {
+    "summary": "results/internal/gru_input_selection/summary.json",
+    "summary_sha256": "703ab97cf54a499d503d62f418e23a6c5cb6999ec6dbda17c9fe2fb126eabf6b",
+    "protocol": {
+      "path": "configs/gru_input_selection.yaml",
+      "sha256": "2d6cbd489a70480089f2d0b547b937d705f749f8cf672f1bb2784f17ea392b64"
+    },
+    "selected": {
+      "history_ms": 200,
+      "bin_ms": 50,
+      "n_bins": 4,
+      "r2_mean": 0.6601979905621559,
+      "r2_seed_sd": 0.005675743839388448
+    },
+    "reused_architecture": {
+      "num_layers": 1,
+      "hidden_size": 64,
+      "dropout": 0.0,
+      "learning_rate": 0.001
+    }
+  },
+  "protocol": {
+    "path": "configs/gru_architecture_selection.yaml",
+    "sha256": "b05804a64c829fe4ac9f2d41ef60dbc7e46b401179b1af119d1ca01469b6186c"
+  },
+  "device": {
+    "device": "cuda",
+    "device_name": "NVIDIA GeForce RTX 4090",
+    "torch_version": "2.12.0+cu126",
+    "cuda_version": "12.6",
+    "cudnn_version": 91002,
+    "deterministic_algorithms": true,
+    "cudnn_deterministic": true,
+    "cudnn_benchmark": false,
+    "allow_tf32": false,
+    "cublas_workspace_config": ":4096:8"
+  },
+  "provenance": {
+    "recording_sha256": "83befb05b5d265c92e03c544c420e2bc0b6c7d3248fa14492c17f39a8aa1f124",
+    "training_identity_sha256": "f2607771191a0b0d8be4f5b1b65c84bf1d3b5470572f8e6e7d6d3d7044f3cc99",
+    "validation_identity_sha256": "30bce5a5dc574afa61454bce57ae393590314d7ac12951e53b0cbce6d7492565",
+    "baseline_summary_sha256": "723c0df12b49a7840995f3db80e3046c3e2a472186031549d29d56c78296bcc9",
+    "input_selection_validation_predictions_sha256": "742291c034c77d00a3bd63df8a8a16b8dcfc9d7c7b23555b0ec99ccf5c6fb4ca"
+  },
+  "samples": {
+    "training_samples": 43022,
+    "training_trials": 123,
+    "validation_samples": 8183,
+    "validation_trials": 24,
+    "n_units": 53
+  },
+  "configurations": [
+    {
+      "num_layers": 1,
+      "hidden_size": 32,
+      "dropout": 0.0,
+      "learning_rate": 0.001,
+      "source": "trained",
+      "rank": 15,
+      "seed_r2_mean": {
+        "0": 0.6567356165445661,
+        "1": 0.6492462448686045,
+        "2": 0.660604988536581
+      },
+      "r2_mean": 0.6555289499832505,
+      "r2_seed_sd": 0.005774711903753037,
+      "r2_seed_min": 0.6492462448686045,
+      "r2_seed_max": 0.660604988536581,
+      "r2_x_mean": 0.6648924326143629,
+      "r2_y_mean": 0.6461654673521382,
+      "pearson_r_mean": 0.8140656277025516,
+      "rmse_cm_s_mean": 4.374857760528048,
+      "best_epoch_mean": 3.0,
+      "tied_with_best": false,
+      "selected": false
+    },
+    {
+      "num_layers": 1,
+      "hidden_size": 32,
+      "dropout": 0.0,
+      "learning_rate": 0.0003,
+      "source": "trained",
+      "rank": 17,
+      "seed_r2_mean": {
+        "0": 0.6524055973832243,
+        "1": 0.6506130074398385,
+        "2": 0.6597313280005921
+      },
+      "r2_mean": 0.6542499776078851,
+      "r2_seed_sd": 0.004830863926049329,
+      "r2_seed_min": 0.6506130074398385,
+      "r2_seed_max": 0.6597313280005921,
+      "r2_x_mean": 0.6629528273545163,
+      "r2_y_mean": 0.6455471278612536,
+      "pearson_r_mean": 0.8113255355037218,
+      "rmse_cm_s_mean": 4.383126357953879,
+      "best_epoch_mean": 9.333333333333334,
+      "tied_with_best": false,
+      "selected": false
+    },
+    {
+      "num_layers": 1,
+      "hidden_size": 64,
+      "dropout": 0.0,
+      "learning_rate": 0.001,
+      "source": "reused",
+      "rank": 10,
+      "seed_r2_mean": {
+        "0": 0.6618878407928201,
+        "1": 0.6648368937427134,
+        "2": 0.6538692371509343
+      },
+      "r2_mean": 0.6601979905621559,
+      "r2_seed_sd": 0.005675743839388448,
+      "r2_seed_min": 0.6538692371509343,
+      "r2_seed_max": 0.6648368937427134,
+      "r2_x_mean": 0.6659317772644157,
+      "r2_y_mean": 0.6544642038598961,
+      "pearson_r_mean": 0.8162091337437097,
+      "rmse_cm_s_mean": 4.345765819404442,
+      "best_epoch_mean": 2.6666666666666665,
+      "tied_with_best": false,
+      "selected": false
+    },
+    {
+      "num_layers": 1,
+      "hidden_size": 64,
+      "dropout": 0.0,
+      "learning_rate": 0.0003,
+      "source": "trained",
+      "rank": 12,
+      "seed_r2_mean": {
+        "0": 0.6598156635402763,
+        "1": 0.6633029343827186,
+        "2": 0.6544032135828273
+      },
+      "r2_mean": 0.6591739371686074,
+      "r2_seed_sd": 0.004484430524723967,
+      "r2_seed_min": 0.6544032135828273,
+      "r2_seed_max": 0.6633029343827186,
+      "r2_x_mean": 0.667427954088462,
+      "r2_y_mean": 0.6509199202487528,
+      "pearson_r_mean": 0.8143239814007907,
+      "rmse_cm_s_mean": 4.3519155792634825,
+      "best_epoch_mean": 6.333333333333333,
+      "tied_with_best": false,
+      "selected": false
+    },
+    {
+      "num_layers": 1,
+      "hidden_size": 128,
+      "dropout": 0.0,
+      "learning_rate": 0.001,
+      "source": "trained",
+      "rank": 6,
+      "seed_r2_mean": {
+        "0": 0.6650239833219278,
+        "1": 0.6651822891858172,
+        "2": 0.6702176963016142
+      },
+      "r2_mean": 0.6668079896031198,
+      "r2_seed_sd": 0.0029539532856756446,
+      "r2_seed_min": 0.6650239833219278,
+      "r2_seed_max": 0.6702176963016142,
+      "r2_x_mean": 0.6747640329290409,
+      "r2_y_mean": 0.6588519462771987,
+      "pearson_r_mean": 0.8198943443896857,
+      "rmse_cm_s_mean": 4.303046414391528,
+      "best_epoch_mean": 2.0,
+      "tied_with_best": false,
+      "selected": false
+    },
+    {
+      "num_layers": 1,
+      "hidden_size": 128,
+      "dropout": 0.0,
+      "learning_rate": 0.0003,
+      "source": "trained",
+      "rank": 9,
+      "seed_r2_mean": {
+        "0": 0.657463368210629,
+        "1": 0.6629285844686494,
+        "2": 0.6668959523207278
+      },
+      "r2_mean": 0.6624293016666688,
+      "r2_seed_sd": 0.004736071498170983,
+      "r2_seed_min": 0.657463368210629,
+      "r2_seed_max": 0.6668959523207278,
+      "r2_x_mean": 0.6686785601503759,
+      "r2_y_mean": 0.6561800431829615,
+      "pearson_r_mean": 0.8158652244903064,
+      "rmse_cm_s_mean": 4.331463557426282,
+      "best_epoch_mean": 5.0,
+      "tied_with_best": false,
+      "selected": false
+    },
+    {
+      "num_layers": 2,
+      "hidden_size": 32,
+      "dropout": 0.0,
+      "learning_rate": 0.001,
+      "source": "trained",
+      "rank": 14,
+      "seed_r2_mean": {
+        "0": 0.6647311727971679,
+        "1": 0.6510675731471565,
+        "2": 0.6533759537931993
+      },
+      "r2_mean": 0.6563915665791745,
+      "r2_seed_sd": 0.007313954416398206,
+      "r2_seed_min": 0.6510675731471565,
+      "r2_seed_max": 0.6647311727971679,
+      "r2_x_mean": 0.6644097006964887,
+      "r2_y_mean": 0.6483734324618604,
+      "pearson_r_mean": 0.8137286196469429,
+      "rmse_cm_s_mean": 4.3696896585185625,
+      "best_epoch_mean": 2.6666666666666665,
+      "tied_with_best": false,
+      "selected": false
+    },
+    {
+      "num_layers": 2,
+      "hidden_size": 32,
+      "dropout": 0.0,
+      "learning_rate": 0.0003,
+      "source": "trained",
+      "rank": 18,
+      "seed_r2_mean": {
+        "0": 0.6582135139677336,
+        "1": 0.6462967717669714,
+        "2": 0.6511557138286964
+      },
+      "r2_mean": 0.6518886665211339,
+      "r2_seed_sd": 0.005992086523646854,
+      "r2_seed_min": 0.6462967717669714,
+      "r2_seed_max": 0.6582135139677336,
+      "r2_x_mean": 0.6611984587624509,
+      "r2_y_mean": 0.6425788742798167,
+      "pearson_r_mean": 0.8101951715976069,
+      "rmse_cm_s_mean": 4.397934295343306,
+      "best_epoch_mean": 8.0,
+      "tied_with_best": false,
+      "selected": false
+    },
+    {
+      "num_layers": 2,
+      "hidden_size": 64,
+      "dropout": 0.0,
+      "learning_rate": 0.001,
+      "source": "trained",
+      "rank": 13,
+      "seed_r2_mean": {
+        "0": 0.6535365979771226,
+        "1": 0.6634443229753357,
+        "2": 0.6598697361799031
+      },
+      "r2_mean": 0.6589502190441204,
+      "r2_seed_sd": 0.005017458269114226,
+      "r2_seed_min": 0.6535365979771226,
+      "r2_seed_max": 0.6634443229753357,
+      "r2_x_mean": 0.6723442103870285,
+      "r2_y_mean": 0.6455562277012125,
+      "pearson_r_mean": 0.8157149567891046,
+      "rmse_cm_s_mean": 4.352310337421611,
+      "best_epoch_mean": 2.3333333333333335,
+      "tied_with_best": false,
+      "selected": false
+    },
+    {
+      "num_layers": 2,
+      "hidden_size": 64,
+      "dropout": 0.0,
+      "learning_rate": 0.0003,
+      "source": "trained",
+      "rank": 16,
+      "seed_r2_mean": {
+        "0": 0.6478048489744122,
+        "1": 0.6589734910883648,
+        "2": 0.6568717083994339
+      },
+      "r2_mean": 0.6545500161540704,
+      "r2_seed_sd": 0.005935261816383941,
+      "r2_seed_min": 0.6478048489744122,
+      "r2_seed_max": 0.6589734910883648,
+      "r2_x_mean": 0.6657594054764955,
+      "r2_y_mean": 0.6433406268316452,
+      "pearson_r_mean": 0.8117666651333382,
+      "rmse_cm_s_mean": 4.380825864177684,
+      "best_epoch_mean": 4.666666666666667,
+      "tied_with_best": false,
+      "selected": false
+    },
+    {
+      "num_layers": 2,
+      "hidden_size": 128,
+      "dropout": 0.0,
+      "learning_rate": 0.001,
+      "source": "trained",
+      "rank": 7,
+      "seed_r2_mean": {
+        "0": 0.6711963439563146,
+        "1": 0.6614448087704354,
+        "2": 0.6638360143324946
+      },
+      "r2_mean": 0.6654923890197483,
+      "r2_seed_sd": 0.005082400264519753,
+      "r2_seed_min": 0.6614448087704354,
+      "r2_seed_max": 0.6711963439563146,
+      "r2_x_mean": 0.6744362714730304,
+      "r2_y_mean": 0.656548506566466,
+      "pearson_r_mean": 0.8198186727381521,
+      "rmse_cm_s_mean": 4.311169792068259,
+      "best_epoch_mean": 1.6666666666666667,
+      "tied_with_best": false,
+      "selected": false
+    },
+    {
+      "num_layers": 2,
+      "hidden_size": 128,
+      "dropout": 0.0,
+      "learning_rate": 0.0003,
+      "source": "trained",
+      "rank": 11,
+      "seed_r2_mean": {
+        "0": 0.6612986573593819,
+        "1": 0.6576475599716881,
+        "2": 0.6586440043634727
+      },
+      "r2_mean": 0.6591967405648476,
+      "r2_seed_sd": 0.0018872641613824966,
+      "r2_seed_min": 0.6576475599716881,
+      "r2_seed_max": 0.6612986573593819,
+      "r2_x_mean": 0.6618664756662919,
+      "r2_y_mean": 0.6565270054634033,
+      "pearson_r_mean": 0.815244309134878,
+      "rmse_cm_s_mean": 4.35277017251042,
+      "best_epoch_mean": 3.0,
+      "tied_with_best": false,
+      "selected": false
+    },
+    {
+      "num_layers": 2,
+      "hidden_size": 32,
+      "dropout": 0.2,
+      "learning_rate": 0.001,
+      "source": "trained",
+      "rank": 4,
+      "seed_r2_mean": {
+        "0": 0.6714642584201842,
+        "1": 0.6650910379581851,
+        "2": 0.6673093726325761
+      },
+      "r2_mean": 0.6679548896703151,
+      "r2_seed_sd": 0.003235274941766072,
+      "r2_seed_min": 0.6650910379581851,
+      "r2_seed_max": 0.6714642584201842,
+      "r2_x_mean": 0.6743974986827258,
+      "r2_y_mean": 0.6615122806579045,
+      "pearson_r_mean": 0.8202976324766729,
+      "rmse_cm_s_mean": 4.295757977015689,
+      "best_epoch_mean": 4.666666666666667,
+      "tied_with_best": false,
+      "selected": false
+    },
+    {
+      "num_layers": 2,
+      "hidden_size": 32,
+      "dropout": 0.2,
+      "learning_rate": 0.0003,
+      "source": "trained",
+      "rank": 8,
+      "seed_r2_mean": {
+        "0": 0.6676736969983271,
+        "1": 0.6637963820322969,
+        "2": 0.6645817261966712
+      },
+      "r2_mean": 0.6653506017424317,
+      "r2_seed_sd": 0.0020498219532686214,
+      "r2_seed_min": 0.6637963820322969,
+      "r2_seed_max": 0.6676736969983271,
+      "r2_x_mean": 0.6740482499240308,
+      "r2_y_mean": 0.6566529535608326,
+      "pearson_r_mean": 0.8189795969329284,
+      "rmse_cm_s_mean": 4.312322314472162,
+      "best_epoch_mean": 14.666666666666666,
+      "tied_with_best": false,
+      "selected": false
+    },
+    {
+      "num_layers": 2,
+      "hidden_size": 64,
+      "dropout": 0.2,
+      "learning_rate": 0.001,
+      "source": "trained",
+      "rank": 3,
+      "seed_r2_mean": {
+        "0": 0.6602192410171321,
+        "1": 0.6717660480974532,
+        "2": 0.6770686314588549
+      },
+      "r2_mean": 0.6696846401911468,
+      "r2_seed_sd": 0.00861537484493453,
+      "r2_seed_min": 0.6602192410171321,
+      "r2_seed_max": 0.6770686314588549,
+      "r2_x_mean": 0.684214220930215,
+      "r2_y_mean": 0.6551550594520786,
+      "pearson_r_mean": 0.822635931199399,
+      "rmse_cm_s_mean": 4.282693557712838,
+      "best_epoch_mean": 3.6666666666666665,
+      "tied_with_best": false,
+      "selected": false
+    },
+    {
+      "num_layers": 2,
+      "hidden_size": 64,
+      "dropout": 0.2,
+      "learning_rate": 0.0003,
+      "source": "trained",
+      "rank": 5,
+      "seed_r2_mean": {
+        "0": 0.6614895464306183,
+        "1": 0.667760625584318,
+        "2": 0.6737405314947869
+      },
+      "r2_mean": 0.6676635678365743,
+      "r2_seed_sd": 0.0061260692058952475,
+      "r2_seed_min": 0.6614895464306183,
+      "r2_seed_max": 0.6737405314947869,
+      "r2_x_mean": 0.6845517772481978,
+      "r2_y_mean": 0.650775358424951,
+      "pearson_r_mean": 0.8204346900677955,
+      "rmse_cm_s_mean": 4.29523066988607,
+      "best_epoch_mean": 8.666666666666666,
+      "tied_with_best": false,
+      "selected": false
+    },
+    {
+      "num_layers": 2,
+      "hidden_size": 128,
+      "dropout": 0.2,
+      "learning_rate": 0.001,
+      "source": "trained",
+      "rank": 1,
+      "seed_r2_mean": {
+        "0": 0.6802940483404775,
+        "1": 0.6714408966783831,
+        "2": 0.6775625346035838
+      },
+      "r2_mean": 0.6764324932074816,
+      "r2_seed_sd": 0.0045334665274698585,
+      "r2_seed_min": 0.6714408966783831,
+      "r2_seed_max": 0.6802940483404775,
+      "r2_x_mean": 0.6886019223440069,
+      "r2_y_mean": 0.664263064070956,
+      "pearson_r_mean": 0.8258092538373004,
+      "rmse_cm_s_mean": 4.239468341547801,
+      "best_epoch_mean": 2.0,
+      "tied_with_best": true,
+      "selected": true
+    },
+    {
+      "num_layers": 2,
+      "hidden_size": 128,
+      "dropout": 0.2,
+      "learning_rate": 0.0003,
+      "source": "trained",
+      "rank": 2,
+      "seed_r2_mean": {
+        "0": 0.6732828667247379,
+        "1": 0.66808827034631,
+        "2": 0.674642614806
+      },
+      "r2_mean": 0.672004583959016,
+      "r2_seed_sd": 0.003459098574184231,
+      "r2_seed_min": 0.66808827034631,
+      "r2_seed_max": 0.674642614806,
+      "r2_x_mean": 0.6837725562066833,
+      "r2_y_mean": 0.6602366117113486,
+      "pearson_r_mean": 0.8229260865353405,
+      "rmse_cm_s_mean": 4.268442313479313,
+      "best_epoch_mean": 6.666666666666667,
+      "tied_with_best": false,
+      "selected": false
+    }
+  ],
+  "selected": {
+    "num_layers": 2,
+    "hidden_size": 128,
+    "dropout": 0.2,
+    "learning_rate": 0.001,
+    "source": "trained",
+    "r2_mean": 0.6764324932074816,
+    "r2_seed_sd": 0.0045334665274698585,
+    "r2_x_mean": 0.6886019223440069,
+    "r2_y_mean": 0.664263064070956
+  },
+  "checks": [
+    {
+      "name": "the frozen input selection matches its recorded hashes",
+      "passed": true,
+      "detail": "protocol (identical apart from line endings), summary, selected input, run table, checkpoints, histories, and predictions"
+    },
+    {
+      "name": "the device and library versions equal the input-selection record",
+      "passed": true,
+      "detail": "NVIDIA GeForce RTX 4090, torch 2.12.0+cu126, strict determinism"
+    },
+    {
+      "name": "the exact frozen training and validation targets were rebuilt",
+      "passed": true,
+      "detail": "43022 training (123 trials) and 8183 validation (24 trials) targets; identity hashes equal the frozen record"
+    },
+    {
+      "name": "the frozen training-only normalization was reproduced exactly",
+      "passed": true,
+      "detail": "history 200 ms / width 50 ms sequences; per-unit count and per-axis target statistics equal the frozen record"
+    },
+    {
+      "name": "the reused checkpoints reproduce their frozen predictions and metrics",
+      "passed": true,
+      "detail": "3 reloaded 1 layer / hidden 64 / dropout 0 / lr 0.001 runs; predictions, R2, correlation, RMSE, and best validation MSE match exactly"
+    },
+    {
+      "name": "every planned new run completed",
+      "passed": true,
+      "detail": "51 of 51 new runs stopped by patience or the epoch limit"
+    },
+    {
+      "name": "every configuration has every seed",
+      "passed": true,
+      "detail": "seeds [0, 1, 2] for each of 18 configurations: 54 entries"
+    },
+    {
+      "name": "the reused entries are the frozen input-selection runs",
+      "passed": true,
+      "detail": "3 reused 1 layer / hidden 64 / dropout 0 / lr 0.001 entries; 69 unique training runs (18 input-selection and 51 new)"
+    },
+    {
+      "name": "every run used the frozen input and targets",
+      "passed": true,
+      "detail": "one history 200 ms / width 50 ms input; 43022 training and 8183 validation targets, unchanged across runs"
+    },
+    {
+      "name": "every run restored its best checkpoint",
+      "passed": true,
+      "detail": "restored validation MSE equals the best recorded epoch"
+    },
+    {
+      "name": "every prediction and metric is finite",
+      "passed": true,
+      "detail": "8183 finite predictions per run"
+    },
+    {
+      "name": "training is deterministic for every searched layer and dropout setting",
+      "passed": true,
+      "detail": "two identical training replays produced bit-identical weights for 1 layer(s) / dropout 0, 2 layer(s) / dropout 0, 2 layer(s) / dropout 0.2"
+    },
+    {
+      "name": "the selected configuration has positive seed-mean R2 on each axis",
+      "passed": true,
+      "detail": "x 0.688602, y 0.664263"
+    },
+    {
+      "name": "the three final checkpoints reproduce their predictions after reload",
+      "passed": true,
+      "detail": "reloaded from disk; validation predictions identical bit for bit"
+    },
+    {
+      "name": "the saved predictions reproduce every final run's R2",
+      "passed": true,
+      "detail": "8183 rows per seed with trial and sample identifiers"
+    }
+  ],
+  "all_checks_passed": true,
+  "held_out": "not constructed",
+  "artifact_hashes": {
+    "candidates.csv": "9fffda3614b1a1d7401a702e5ad0c4c738862c224c89e00a8d2f48baac78ea71",
+    "checkpoint_seed0.pt": "036ae85fdfd78ec4984fb48dd74360fbd5f7f9bb463d97bdcb341312398b6514",
+    "checkpoint_seed1.pt": "1d88063a203c5f546f8e5d4daf22d34e440a9e4e701623bc112be45312721388",
+    "checkpoint_seed2.pt": "b9ea14e36f8daed3c423b12684fce77c83b34db8b54d49abdd8fd7a6deca9e40",
+    "training_histories.csv": "087d4ae986ded460e2458da3a3c5c0ac2e6dd697a51383df37c4ae4d11d43185",
+    "validation_predictions.csv": "023688086221740b7679e38a158231cec3d925eb5dc13a0143f929f5b85a8bfd",
+    "final_configuration.json": "7800e900c3e56fb400bd9330efcefb7f902c76d48697e27e1bd19dbd1ed230b0"
+  }
+}

@@ -1,22 +1,19 @@
-"""Select and freeze the GRU input representation on the validation development set.
+"""Choose the GRU input history and bin width on the validation set.
 
-Run from the repository root with the project environment active::
+Usage, from the repository root::
 
     python -m scripts.select_gru_input
 
-The baseline GRU (hidden size 64, learning rate 0.001) is trained with every seed
-on every history/bin-width representation in ``configs/gru_input_selection.yaml``.
-Every run uses the exact official baseline training and validation targets, uses
-validation loss for early stopping, and is scored after restoring its best
-checkpoint. One representation is selected by the frozen seed-aggregate rule.
-Held-out sequences are never built.
+Trains the baseline GRU (hidden size 64, learning rate 0.001) with each seed on
+every history/bin-width pair in ``configs/gru_input_selection.yaml``. Validation
+loss drives early stopping, and the pair with the best mean R2 across seeds is
+selected. The test split is not used.
 
-Results are written once under ``results/internal/gru_input_selection/``; an
-existing output directory is never overwritten. Only the selected
-representation's three checkpoints are kept.
+Output goes to ``results/internal/gru_input_selection/``; the script will not
+overwrite an existing directory. Only the selected pair's checkpoints are kept.
 
-Exit codes: 0 when every check passes, 1 when a check or run fails, and 2 when
-the recording or a frozen input is not available.
+Exit codes: 0 if all checks pass, 1 if a check or run fails, 2 if the recording
+or an input file is missing.
 """
 
 from __future__ import annotations

@@ -1,13 +1,9 @@
-"""Compact sequence-to-one GRU velocity decoder and its frozen training procedure.
+"""GRU velocity decoder, training loop, and checkpoint helpers.
 
-Each sample is an independent sequence: the hidden state starts at zero for every
-sample and is never carried across samples, batches, or trials. The network reads
-the final hidden state through one linear two-output velocity head and is trained
-in normalized velocity coordinates.
-
-Training is fully deterministic on the single device chosen before a search.
-PyTorch's deterministic-algorithm mode stays strict, so an operation without a
-deterministic implementation raises instead of silently changing results.
+Each sample is decoded on its own: the hidden state starts at zero and is not
+carried over between samples. A linear head maps the last hidden state to
+(vx, vy) in normalized units. Training uses PyTorch's deterministic algorithms,
+so a run is reproducible on the same device and library versions.
 """
 
 from __future__ import annotations
@@ -41,6 +37,7 @@ __all__ = [
     "rank_representations",
     "save_checkpoint",
     "train_run",
+    "validate_architecture",
 ]
 
 _CHECKPOINT_FORMAT = 1
@@ -230,24 +227,52 @@ def configure_determinism(protocol: GruProtocol) -> DeviceInfo:
     )
 
 
-class GruDecoder(nn.Module):
-    """One GRU layer read out by a linear two-output velocity head."""
-
-    def __init__(self, n_units: int, hidden_size: int) -> None:
-        super().__init__()
-        self.gru = nn.GRU(
-            input_size=n_units,
-            hidden_size=hidden_size,
-            num_layers=1,
-            batch_first=True,
-            dropout=0.0,
+def validate_architecture(num_layers: int, dropout: float) -> None:
+    """Refuse a layer count or dropout the decoder cannot apply as declared."""
+    if int(num_layers) != num_layers or num_layers < 1:
+        raise GruError(f"The GRU needs a positive whole number of layers, not {num_layers}.")
+    if not 0.0 <= dropout < 1.0:
+        raise GruError(f"Dropout must lie in [0, 1), not {dropout}.")
+    if num_layers == 1 and dropout != 0.0:
+        raise GruError(
+            "Dropout acts only between stacked GRU layers; a one-layer decoder must use 0."
         )
+
+
+class GruDecoder(nn.Module):
+    """Stacked GRU layers read out by a linear two-output velocity head.
+
+    Layers are separate one-layer GRUs with dropout applied to every layer's output
+    sequence except the last, the same rule as a multi-layer ``nn.GRU``. Applying
+    it explicitly keeps cuDNN's internal RNN dropout state out of training: on
+    Windows that cached state aborts the interpreter at exit. The first layer is
+    ``gru`` and later layers are ``upper``, so a one-layer checkpoint holds only
+    ``gru`` and ``head`` parameters.
+    """
+
+    def __init__(
+        self, n_units: int, hidden_size: int, num_layers: int = 1, dropout: float = 0.0
+    ) -> None:
+        super().__init__()
+        validate_architecture(num_layers, dropout)
+        self.gru = nn.GRU(input_size=n_units, hidden_size=hidden_size, batch_first=True)
+        self.upper = nn.ModuleList(
+            nn.GRU(input_size=hidden_size, hidden_size=hidden_size, batch_first=True)
+            for _ in range(int(num_layers) - 1)
+        )
+        self.dropout = nn.Dropout(float(dropout))
         self.head = nn.Linear(hidden_size, 2)
+
+    @property
+    def num_layers(self) -> int:
+        return 1 + len(self.upper)
 
     def forward(self, sequences: torch.Tensor) -> torch.Tensor:
         """Map ``(batch, n_bins, n_units)`` sequences to ``(batch, 2)`` velocities."""
         initial = sequences.new_zeros(1, sequences.shape[0], self.gru.hidden_size)
-        _, final = self.gru(sequences, initial)
+        output, final = self.gru(sequences, initial)
+        for layer in self.upper:
+            output, final = layer(self.dropout(output), initial)
         return self.head(final[-1])
 
 
@@ -313,6 +338,8 @@ def train_run(
     protocol: GruProtocol,
     hidden_size: int,
     learning_rate: float,
+    num_layers: int = 1,
+    dropout: float = 0.0,
     progress: Callable[[dict[str, float | int | bool]], None] | None = None,
 ) -> RunResult:
     """Train one seeded run with validation early stopping and restore its best state.
@@ -324,7 +351,7 @@ def train_run(
         raise GruError("Sequences and targets are not row-aligned.")
     device = train_x.device
     set_global_seed(seed)
-    model = GruDecoder(int(train_x.shape[2]), hidden_size).to(device)
+    model = GruDecoder(int(train_x.shape[2]), hidden_size, num_layers, dropout).to(device)
     generator = torch.Generator().manual_seed(seed)
     optimizer = torch.optim.AdamW(
         model.parameters(),
@@ -453,13 +480,25 @@ def save_checkpoint(
 
 
 def load_checkpoint(path: Path) -> tuple[GruDecoder, dict[str, Any]]:
-    """Rebuild a decoder from a checkpoint without executing pickled code."""
+    """Rebuild a decoder from a checkpoint without executing pickled code.
+
+    Metadata without ``num_layers`` or ``dropout`` describes a one-layer,
+    dropout-free decoder.
+    """
     payload = torch.load(path, map_location="cpu", weights_only=True)
     if not isinstance(payload, dict) or payload.get("format") != _CHECKPOINT_FORMAT:
         raise GruError(f"{path} is not a supported GRU checkpoint.")
     metadata = dict(payload["metadata"])
-    model = GruDecoder(int(metadata["n_units"]), int(metadata["hidden_size"]))
-    model.load_state_dict(payload["state_dict"], strict=True)
+    model = GruDecoder(
+        int(metadata["n_units"]),
+        int(metadata["hidden_size"]),
+        int(metadata.get("num_layers", 1)),
+        float(metadata.get("dropout", 0.0)),
+    )
+    try:
+        model.load_state_dict(payload["state_dict"], strict=True)
+    except RuntimeError as error:
+        raise GruError(f"{path} does not match the architecture in its metadata.") from error
     return model, metadata
 
 

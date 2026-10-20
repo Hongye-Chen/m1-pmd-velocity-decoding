@@ -1,8 +1,7 @@
-"""Synthetic tests for GRU sequence construction and normalization.
+"""Tests for sequence building and normalization on synthetic spikes.
 
-Spike times are placed on the exact bin edges the builder computes, so an
-off-by-one in the half-open convention, a reversed element order, or a window
-that crosses a trial boundary changes a count instead of passing silently.
+Spikes sit exactly on bin edges, so off-by-one errors, reversed bin order, or a
+window crossing a trial boundary show up as wrong counts.
 """
 
 from __future__ import annotations

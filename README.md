@@ -7,24 +7,29 @@ evaluation.
 
 ## Current validation results
 
-The official validation set contains 8,183 samples from 24 trials. Both neural
-decoders used the same 123 eligible training trials and were evaluated on
-identical validation targets.
+The validation set contains 8,183 samples from 24 trials. Every decoder used the
+same 123 eligible training trials and identical validation targets. Ridge and
+Kalman were fixed before validation; GRU validation was used for early stopping
+and configuration selection, so its scores are development results.
 
 | Model | Validation R² (x, y) | Mean R² | Mean correlation | Mean RMSE (cm/s) |
 | --- | --- | --- | --- | --- |
 | Constant baseline | -0.000140, -0.000276 | -0.000208 | undefined | 7.457 |
 | Ridge | 0.543588, 0.552308 | **0.547948** | 0.745 | 5.014 |
 | Kalman | 0.527121, 0.473273 | **0.500197** | 0.720 | 5.267 |
+| GRU, three-seed mean (development) | 0.688602, 0.664263 | **0.676432** | 0.826 | 4.239 |
 
 The constant model predicts the mean training velocity and uses no neural data.
 Compact, machine-readable evidence is available in
 [`results/baseline_summary.json`](results/baseline_summary.json),
 [`results/kalman_decoder_selection/`](results/kalman_decoder_selection/), and
-[`results/kalman_validation/`](results/kalman_validation/).
+[`results/kalman_validation/`](results/kalman_validation/). GRU selection
+evidence and frozen models are under
+[`results/gru_input_selection/`](results/gru_input_selection/) and
+[`results/gru_architecture_selection/`](results/gru_architecture_selection/).
 
-The GRU comparison and held-out evaluation are not yet complete. Held-out trials
-remain unopened.
+Held-out evaluation has not occurred; those trials remain unopened. Final model
+comparisons will use that held-out result rather than the GRU development score.
 
 ## Data
 
@@ -65,8 +70,8 @@ For a single run, the environment variable below overrides the local file:
 $env:NEURAL_DECODING_NWB_FILE = "D:/path/to/sub-T_ses-RT-20130906_behavior+ecephys.nwb"
 ```
 
-CPU execution is sufficient through the Kalman workflow. GPU support is optional
-for the later GRU experiment.
+CPU execution is sufficient for the classical decoders and GRU inference. A CUDA
+GPU is recommended for GRU training and configuration selection.
 
 ## Methods
 
@@ -93,6 +98,25 @@ included at [`results/kalman_validation/model.json`](results/kalman_validation/m
 Sample-level validation predictions remain omitted; their hash is retained in the
 compact validation summary.
 
+### GRU decoder
+
+The compact sequence-to-one GRU uses the same 53 units and target identities.
+Input selection compared 100 and 200 ms histories with 10, 20, and 50 ms bins
+while keeping the neural interval end 50 ms before the velocity target. The
+selected input contains four chronological 50 ms bins spanning 200 ms.
+
+Architecture selection compared one- and two-layer GRUs, hidden sizes 32, 64,
+and 128, learning rates 0.001 and 0.0003, and dropout 0 or 0.2 where applicable.
+Each configuration used seeds 0, 1, and 2. The selected model has two layers,
+hidden size 128, dropout 0.2, and learning rate 0.001. Its complete configuration
+is in
+[`results/gru_architecture_selection/final_configuration.json`](results/gru_architecture_selection/final_configuration.json);
+the directory also contains all three fitted seed checkpoints.
+
+The selection tables and summaries are supporting evidence. Most users should
+use the frozen configuration and checkpoints rather than rerun the selection
+workflow.
+
 ## Limitations
 
 This is an offline, within-session result from one subject and one recording.
@@ -102,15 +126,19 @@ of validation targets—and its process and innovation residuals remain temporal
 correlated. It should be treated as a causal linear decoder, not as a fully
 calibrated probabilistic model.
 
+GRU validation performance is tuning evidence because validation controlled both
+early stopping and configuration selection. It is not an unbiased final estimate;
+that comparison remains reserved for the unopened held-out trials.
+
 ## Run the tests
 
 ```powershell
 pytest
 ```
 
-The test suite is deliberately independent of the recording, so it runs in seconds
-without the data present. Checks that need the actual file live in the validation
-command above.
+The test suite is deliberately independent of the recording, so it runs in
+seconds without the data present. Runtime checks that need the recording execute
+inside the relevant data-processing commands.
 
 ## Repository layout
 
@@ -120,7 +148,7 @@ command above.
 | `configs/` | Tracked defaults, plus an untracked local override for paths |
 | `scripts/` | Runnable entry points, invoked as `python -m scripts.<name>` |
 | `tests/` | Automated tests, run with `pytest` |
-| `results/` | Compact tracked metrics, selections, validation summaries, and manifests; large generated artifacts remain ignored |
+| `results/` | Tracked metrics, selection evidence, validation summaries, and frozen model artifacts; sample-level predictions remain private |
 | `reports/` | Generated figures and report tables |
 
 `requirements.txt` records the dependency versions used to verify the project.

@@ -1,17 +1,12 @@
-"""Chronological spike-count sequences for the sequence-to-one GRU decoder.
+"""Binned spike-count sequences for the GRU decoder.
 
-Every input representation is built on the official baseline target identities,
-never on its own eligibility rule, so all representations predict identical
-targets. For a target at behavior time ``t`` with neural reference ``t - lag``:
+For a target at time ``t``, the input covers ``[t - lag - history, t - lag)`` in
+equal-width bins, oldest bin first. The window has to stay inside the target's
+trial. Samples are taken from the baseline feature set, so every bin setting is
+scored on the same targets.
 
-- the sequence covers ``[t - lag - history, t - lag)`` split into chronological
-  half-open bins of one width, so element 0 is the oldest and a spike falling
-  exactly on ``t - lag`` belongs to no element;
-- the earliest bin edge and the target both lie inside the target's own trial.
-
-Count normalization uses one mean and one scale per unit, pooled over every
-training sequence element, so the same unit is scaled identically at every
-position. Statistics may only be fitted on the training split.
+Counts are normalized per unit, with one mean and scale shared by all bins, and
+the statistics come from the training split only.
 """
 
 from __future__ import annotations

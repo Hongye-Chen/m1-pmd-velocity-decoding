@@ -1,0 +1,258 @@
+{
+  "procedure": {
+    "name": "GRU input-representation selection",
+    "development_set": "validation, used for early stopping and selection",
+    "baseline_model": {
+      "hidden_size": 64,
+      "learning_rate": 0.001
+    },
+    "grid": {
+      "histories_ms": [
+        100,
+        200
+      ],
+      "bin_widths_ms": [
+        10,
+        20,
+        50
+      ],
+      "seeds": [
+        0,
+        1,
+        2
+      ],
+      "interval_end_lag_ms": 50
+    },
+    "ranking": "arithmetic mean of seed-level mean R2; within the tie tolerance lower seed sample SD, then shorter history, then larger bin width",
+    "tie_tolerance": 1e-06
+  },
+  "protocol": {
+    "path": "configs/gru_input_selection.yaml",
+    "sha256": "2d6cbd489a70480089f2d0b547b937d705f749f8cf672f1bb2784f17ea392b64"
+  },
+  "device": {
+    "device": "cuda",
+    "device_name": "NVIDIA GeForce RTX 4090",
+    "torch_version": "2.12.0+cu126",
+    "cuda_version": "12.6",
+    "cudnn_version": 91002,
+    "deterministic_algorithms": true,
+    "cudnn_deterministic": true,
+    "cudnn_benchmark": false,
+    "allow_tf32": false,
+    "cublas_workspace_config": ":4096:8"
+  },
+  "provenance": {
+    "recording_sha256": "83befb05b5d265c92e03c544c420e2bc0b6c7d3248fa14492c17f39a8aa1f124",
+    "training_identity_sha256": "f2607771191a0b0d8be4f5b1b65c84bf1d3b5470572f8e6e7d6d3d7044f3cc99",
+    "validation_identity_sha256": "30bce5a5dc574afa61454bce57ae393590314d7ac12951e53b0cbce6d7492565",
+    "baseline_summary_sha256": "723c0df12b49a7840995f3db80e3046c3e2a472186031549d29d56c78296bcc9",
+    "baseline_validation_predictions_sha256": "7127fa1fcd2bceaf78983dc43bc1b55d6136126485fa7b92984fa1db2b47f556",
+    "kalman_selected_config_sha256": "29fd1e464f7e8aae4b4212d01f9f8c6b04e8ec802249ea3bc141f27e25dc4e35"
+  },
+  "samples": {
+    "training_samples": 43022,
+    "training_trials": 123,
+    "validation_samples": 8183,
+    "validation_trials": 24,
+    "n_units": 53
+  },
+  "representations": [
+    {
+      "history_ms": 100,
+      "bin_ms": 10,
+      "n_bins": 10,
+      "rank": 6,
+      "seed_r2_mean": {
+        "0": 0.49866208637509846,
+        "1": 0.5080075852098274,
+        "2": 0.4974535777750611
+      },
+      "r2_mean": 0.501374416453329,
+      "r2_seed_sd": 0.00577618551236288,
+      "r2_seed_min": 0.4974535777750611,
+      "r2_seed_max": 0.5080075852098274,
+      "r2_x_mean": 0.5275902158289458,
+      "r2_y_mean": 0.4751586170777122,
+      "pearson_r_mean": 0.7142921641913365,
+      "rmse_cm_s_mean": 5.2611967144069185,
+      "tied_with_best": false,
+      "selected": false
+    },
+    {
+      "history_ms": 100,
+      "bin_ms": 20,
+      "n_bins": 5,
+      "rank": 5,
+      "seed_r2_mean": {
+        "0": 0.5258853720056825,
+        "1": 0.5221823269875243,
+        "2": 0.5226808952906072
+      },
+      "r2_mean": 0.5235828647612714,
+      "r2_seed_sd": 0.002009551516168266,
+      "r2_seed_min": 0.5221823269875243,
+      "r2_seed_max": 0.5258853720056825,
+      "r2_x_mean": 0.5446828544478461,
+      "r2_y_mean": 0.5024828750746966,
+      "pearson_r_mean": 0.7264918202248528,
+      "rmse_cm_s_mean": 5.143531423342263,
+      "tied_with_best": false,
+      "selected": false
+    },
+    {
+      "history_ms": 100,
+      "bin_ms": 50,
+      "n_bins": 2,
+      "rank": 4,
+      "seed_r2_mean": {
+        "0": 0.5427745091939569,
+        "1": 0.5433333143895436,
+        "2": 0.5376609869817865
+      },
+      "r2_mean": 0.541256270188429,
+      "r2_seed_sd": 0.0031261176903033547,
+      "r2_seed_min": 0.5376609869817865,
+      "r2_seed_max": 0.5433333143895436,
+      "r2_x_mean": 0.5675426501807743,
+      "r2_y_mean": 0.5149698901960836,
+      "pearson_r_mean": 0.7392859843495874,
+      "rmse_cm_s_mean": 5.046011695431154,
+      "tied_with_best": false,
+      "selected": false
+    },
+    {
+      "history_ms": 200,
+      "bin_ms": 10,
+      "n_bins": 20,
+      "rank": 3,
+      "seed_r2_mean": {
+        "0": 0.6211999639564301,
+        "1": 0.6309825106249118,
+        "2": 0.6440641521571524
+      },
+      "r2_mean": 0.6320822089128314,
+      "r2_seed_sd": 0.011471694633438103,
+      "r2_seed_min": 0.6211999639564301,
+      "r2_seed_max": 0.6440641521571524,
+      "r2_x_mean": 0.6536108444529051,
+      "r2_y_mean": 0.6105535733727578,
+      "pearson_r_mean": 0.798474052289456,
+      "rmse_cm_s_mean": 4.517966145957708,
+      "tied_with_best": false,
+      "selected": false
+    },
+    {
+      "history_ms": 200,
+      "bin_ms": 20,
+      "n_bins": 10,
+      "rank": 2,
+      "seed_r2_mean": {
+        "0": 0.6439054041588987,
+        "1": 0.6455700119046346,
+        "2": 0.6509883009522982
+      },
+      "r2_mean": 0.6468212390052771,
+      "r2_seed_sd": 0.0037035163952011804,
+      "r2_seed_min": 0.6439054041588987,
+      "r2_seed_max": 0.6509883009522982,
+      "r2_x_mean": 0.654558352312072,
+      "r2_y_mean": 0.6390841256984824,
+      "pearson_r_mean": 0.8072663216820759,
+      "rmse_cm_s_mean": 4.429964723164524,
+      "tied_with_best": false,
+      "selected": false
+    },
+    {
+      "history_ms": 200,
+      "bin_ms": 50,
+      "n_bins": 4,
+      "rank": 1,
+      "seed_r2_mean": {
+        "0": 0.6618878407928201,
+        "1": 0.6648368937427134,
+        "2": 0.6538692371509343
+      },
+      "r2_mean": 0.6601979905621559,
+      "r2_seed_sd": 0.005675743839388448,
+      "r2_seed_min": 0.6538692371509343,
+      "r2_seed_max": 0.6648368937427134,
+      "r2_x_mean": 0.6659317772644157,
+      "r2_y_mean": 0.6544642038598961,
+      "pearson_r_mean": 0.8162091337437097,
+      "rmse_cm_s_mean": 4.345765819404442,
+      "tied_with_best": true,
+      "selected": true
+    }
+  ],
+  "selected": {
+    "history_ms": 200,
+    "bin_ms": 50,
+    "n_bins": 4,
+    "r2_mean": 0.6601979905621559,
+    "r2_seed_sd": 0.005675743839388448
+  },
+  "checks": [
+    {
+      "name": "every planned run completed",
+      "passed": true,
+      "detail": "18 of 18 runs stopped by patience or the epoch limit"
+    },
+    {
+      "name": "every representation has every seed",
+      "passed": true,
+      "detail": "seeds [0, 1, 2] for each of 6 representations"
+    },
+    {
+      "name": "every run used the exact official targets",
+      "passed": true,
+      "detail": "43022 training and 8183 validation targets, identical for every representation"
+    },
+    {
+      "name": "the 200 ms / 50 ms sequences equal the baseline spike counts",
+      "passed": true,
+      "detail": "bit-identical to the official Ridge feature counts on both splits"
+    },
+    {
+      "name": "normalization was fitted on training sequences only",
+      "passed": true,
+      "detail": "one count scale per unit over every training element; training targets only"
+    },
+    {
+      "name": "every run restored its best checkpoint",
+      "passed": true,
+      "detail": "restored validation MSE equals the best recorded epoch exactly"
+    },
+    {
+      "name": "every prediction and metric is finite",
+      "passed": true,
+      "detail": "8183 finite predictions per run"
+    },
+    {
+      "name": "training is deterministic on the search device",
+      "passed": true,
+      "detail": "two identical training replays produced bit-identical weights"
+    },
+    {
+      "name": "the three retained checkpoints reproduce their predictions after reload",
+      "passed": true,
+      "detail": "reloaded from disk; validation predictions identical bit for bit"
+    },
+    {
+      "name": "the saved predictions reproduce every retained run's R2",
+      "passed": true,
+      "detail": "8183 rows per seed with trial and sample identifiers"
+    }
+  ],
+  "all_checks_passed": true,
+  "held_out": "not constructed",
+  "artifact_hashes": {
+    "runs.csv": "d285e42fbac71ff4fe382455efa2ad57bfc1ee4aae512acf6ec5aa0351c34fb6",
+    "checkpoint_seed0.pt": "adbff0e528c32f3622db93505c8b956dfd947c89ec1a2b80558418578a4f6ca5",
+    "checkpoint_seed1.pt": "149b106947029f095f56d6dc8a1e915626d477dea4e075878b96bb9911f1b18b",
+    "checkpoint_seed2.pt": "41607e9e6cb206402fd9ea38fabc8c0427d46359d260b7a37057df740b955253",
+    "training_histories.csv": "cd7be1f123a8f6d0a411c061c2db098cc2ea5fdcce5783d3dd58189a682572a8",
+    "validation_predictions.csv": "742291c034c77d00a3bd63df8a8a16b8dcfc9d7c7b23555b0ec99ccf5c6fb4ca",
+    "selected_input.json": "0e0f635eaf89d5241d48d35d69ce63c359fc5ccdb2f0e220dffc481880e4a13f"
+  }
+}
