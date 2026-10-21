@@ -11,7 +11,7 @@ the statistics come from the training split only.
 
 from __future__ import annotations
 
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from typing import Any
 
@@ -145,6 +145,61 @@ class SequenceNormalization:
             "target_std": self.target_std.tolist(),
         }
 
+    @classmethod
+    def from_dict(
+        cls, payload: Mapping[str, Any], *, trial_rows: Sequence[int]
+    ) -> SequenceNormalization:
+        """Rebuild stored training statistics without refitting them.
+
+        ``as_dict`` records only how many training trials were used, so the caller
+        supplies their rows and the count must agree. The result must serialize
+        back to exactly ``payload``.
+        """
+        if payload.get("fitted_on") != TRAIN:
+            raise SequenceError(
+                f"Stored normalization was fitted on {payload.get('fitted_on')!r}, "
+                f"not {TRAIN!r}."
+            )
+        rows = tuple(sorted(int(row) for row in trial_rows))
+        if len(rows) != int(payload["n_trials"]):
+            raise SequenceError(
+                f"Stored normalization covers {payload['n_trials']} training trials, "
+                f"but {len(rows)} were supplied."
+            )
+        normalization = cls(
+            count_mean=np.asarray(payload["count_mean"], dtype=np.float64),
+            count_std=np.asarray(payload["count_std"], dtype=np.float64),
+            target_mean=np.asarray(payload["target_mean"], dtype=np.float64),
+            target_std=np.asarray(payload["target_std"], dtype=np.float64),
+            representation=InputRepresentation(
+                int(payload["history_ms"]), int(payload["bin_ms"])
+            ),
+            n_samples=int(payload["n_samples"]),
+            n_elements=int(payload["n_count_elements_per_unit"]),
+            n_units_at_floor=int(payload["n_units_at_floor"]),
+            std_floor=float(payload["std_floor"]),
+            trial_rows=rows,
+        )
+        statistics = (
+            normalization.count_mean,
+            normalization.count_std,
+            normalization.target_mean,
+            normalization.target_std,
+        )
+        if (
+            normalization.count_mean.ndim != 1
+            or normalization.count_std.shape != normalization.count_mean.shape
+            or normalization.target_mean.shape != (2,)
+            or normalization.target_std.shape != (2,)
+            or not all(np.all(np.isfinite(values)) for values in statistics)
+            or np.any(normalization.count_std <= 0.0)
+            or np.any(normalization.target_std <= 0.0)
+        ):
+            raise SequenceError("Stored normalization statistics are malformed.")
+        if normalization.as_dict() != dict(payload):
+            raise SequenceError("Stored normalization does not round-trip exactly.")
+        return normalization
+
 
 def build_sequences(
     identity: FeatureSet,
@@ -153,17 +208,20 @@ def build_sequences(
     spike_times: Sequence[np.ndarray],
     trials: pd.DataFrame,
     representation: InputRepresentation,
+    allow_held_out: bool = False,
 ) -> SequenceSet:
     """Build one representation's sequences on an existing target identity.
 
     ``identity`` supplies the targets, trial rows, and neural reference times; its
     own counts are not used. The window is checked against each trial's
     behavior-grid bounds rather than assumed from the eligibility rule.
+    ``allow_held_out`` is required to build the held-out split, which must stay
+    untouched until the frozen evaluation.
     """
-    if identity.split == TEST:
+    if identity.split == TEST and not allow_held_out:
         raise SequenceError(
             "Refusing to build held-out sequences. The held-out split stays unopened "
-            "until the experiment is frozen."
+            "until the experiment is frozen; pass allow_held_out to override."
         )
     cadence_ms = identity.spec.cadence_ms
     if representation.history_ms % cadence_ms or representation.bin_ms % cadence_ms:
