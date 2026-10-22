@@ -1,0 +1,312 @@
+{
+  "procedure": {
+    "name": "one-time held-out evaluation of the frozen official decoders",
+    "models": "loaded from tracked artifacts; nothing was refitted, tuned, or selected",
+    "targets": "every eligible held-out trial; each target needs 200 ms of neural history before the 50 ms lag inside its trial on the 10 ms behavior grid; every model predicts the same rows in the same order",
+    "metrics": "per-axis and mean R2, Pearson correlation, and RMSE in cm/s, computed from the saved prediction table",
+    "gru_seeds": "each seed scored separately; arithmetic mean and sample standard deviation (ddof=1) of the seed-level metrics; no ensemble and no seed selection"
+  },
+  "recording": {
+    "name": "sub-T_ses-RT-20130906_behavior+ecephys.nwb",
+    "sha256": "83befb05b5d265c92e03c544c420e2bc0b6c7d3248fa14492c17f39a8aa1f124"
+  },
+  "models": {
+    "constant": {
+      "artifact": "results/baselines/constant_baseline.json"
+    },
+    "ridge": {
+      "artifact": "results/baselines/ridge_decoder.json",
+      "alpha": 10000.0,
+      "lag_ms": 50
+    },
+    "kalman": {
+      "model": "results/kalman_validation/model.json",
+      "configuration": "results/kalman_validation/configuration.json",
+      "state": "PVA",
+      "neural_width_ms": 50,
+      "interval_end_lag_ms": 50,
+      "initialization": "recorded position at each trial start only"
+    },
+    "gru": {
+      "configuration": "results/gru_architecture_selection/final_configuration.json",
+      "checkpoints": {
+        "0": "results/gru_architecture_selection/checkpoint_seed0.pt",
+        "1": "results/gru_architecture_selection/checkpoint_seed1.pt",
+        "2": "results/gru_architecture_selection/checkpoint_seed2.pt"
+      },
+      "num_layers": 2,
+      "hidden_size": 128,
+      "dropout": 0.2,
+      "history_ms": 200,
+      "bin_ms": 50,
+      "interval_end_lag_ms": 50,
+      "device": {
+        "device": "cuda",
+        "device_name": "NVIDIA GeForce RTX 4090",
+        "torch_version": "2.12.0+cu126",
+        "cuda_version": "12.6",
+        "cudnn_version": 91002,
+        "deterministic_algorithms": true,
+        "cudnn_deterministic": true,
+        "cudnn_benchmark": false,
+        "allow_tf32": false,
+        "cublas_workspace_config": ":4096:8"
+      }
+    }
+  },
+  "samples": {
+    "held_out_trials": 29,
+    "held_out_trial_rows": [
+      183,
+      184,
+      185,
+      186,
+      187,
+      188,
+      190,
+      191,
+      192,
+      193,
+      194,
+      197,
+      198,
+      199,
+      200,
+      201,
+      202,
+      203,
+      204,
+      205,
+      206,
+      207,
+      208,
+      209,
+      210,
+      211,
+      212,
+      213,
+      214
+    ],
+    "held_out_trial_ids": [
+      183,
+      184,
+      185,
+      186,
+      187,
+      188,
+      190,
+      191,
+      192,
+      193,
+      194,
+      197,
+      198,
+      199,
+      200,
+      201,
+      202,
+      203,
+      204,
+      205,
+      206,
+      207,
+      208,
+      209,
+      210,
+      211,
+      212,
+      213,
+      214
+    ],
+    "held_out_targets": 10215,
+    "target_identity_sha256": "7b3690770fab356247c8585cfdd3a5a2c50bf16f0eb4a42eb83d30859c49ecbc"
+  },
+  "metrics": {
+    "constant": {
+      "n_samples": 10215,
+      "r2": {
+        "x": -0.0002319806267327973,
+        "y": -0.00014543729550808848
+      },
+      "r2_mean": -0.00018870896112044289,
+      "pearson_r": {
+        "x": null,
+        "y": null
+      },
+      "pearson_r_mean": null,
+      "rmse_cm_s": {
+        "x": 6.801596696045409,
+        "y": 7.3802802258745785
+      },
+      "rmse_cm_s_mean": 7.090938460959993
+    },
+    "ridge": {
+      "n_samples": 10215,
+      "r2": {
+        "x": 0.5699780296435707,
+        "y": 0.5411037569647739
+      },
+      "r2_mean": 0.5555408933041723,
+      "pearson_r": {
+        "x": 0.7558450242961201,
+        "y": 0.7363530855974675
+      },
+      "pearson_r_mean": 0.7460990549467938,
+      "rmse_cm_s": {
+        "x": 4.459701908438816,
+        "y": 4.999177121867183
+      },
+      "rmse_cm_s_mean": 4.7294395151529995
+    },
+    "kalman": {
+      "n_samples": 10215,
+      "r2": {
+        "x": 0.5484791965989683,
+        "y": 0.4105901356353149
+      },
+      "r2_mean": 0.4795346661171416,
+      "pearson_r": {
+        "x": 0.7488245907563523,
+        "y": 0.6744794079520725
+      },
+      "pearson_r_mean": 0.7116519993542124,
+      "rmse_cm_s": {
+        "x": 4.569823124297498,
+        "y": 5.66565301254891
+      },
+      "rmse_cm_s_mean": 5.117738068423204
+    },
+    "gru": {
+      "seeds": {
+        "0": {
+          "n_samples": 10215,
+          "r2": {
+            "x": 0.7013632868670481,
+            "y": 0.6865106283087724
+          },
+          "r2_mean": 0.6939369575879102,
+          "pearson_r": {
+            "x": 0.8378237143258893,
+            "y": 0.8299405097327754
+          },
+          "pearson_r_mean": 0.8338821120293324,
+          "rmse_cm_s": {
+            "x": 3.7164826274057465,
+            "y": 4.13192741572301
+          },
+          "rmse_cm_s_mean": 3.9242050215643784
+        },
+        "1": {
+          "n_samples": 10215,
+          "r2": {
+            "x": 0.7108333113929204,
+            "y": 0.7121330498801011
+          },
+          "r2_mean": 0.7114831806365107,
+          "pearson_r": {
+            "x": 0.8434100081877901,
+            "y": 0.8449896157398854
+          },
+          "pearson_r_mean": 0.8441998119638378,
+          "rmse_cm_s": {
+            "x": 3.6570815039356854,
+            "y": 3.9594710905203696
+          },
+          "rmse_cm_s_mean": 3.8082762972280273
+        },
+        "2": {
+          "n_samples": 10215,
+          "r2": {
+            "x": 0.7054495125090843,
+            "y": 0.6920710877426592
+          },
+          "r2_mean": 0.6987603001258718,
+          "pearson_r": {
+            "x": 0.8408837944203761,
+            "y": 0.8319220001814911
+          },
+          "pearson_r_mean": 0.8364028973009336,
+          "rmse_cm_s": {
+            "x": 3.6909688627133703,
+            "y": 4.095118816954132
+          },
+          "rmse_cm_s_mean": 3.8930438398337515
+        }
+      },
+      "seed_mean": {
+        "r2": {
+          "x": 0.7058820369230175,
+          "y": 0.6969049219771776
+        },
+        "r2_mean": 0.7013934794500974,
+        "pearson_r": {
+          "x": 0.8407058389780184,
+          "y": 0.8356173752180508
+        },
+        "pearson_r_mean": 0.8381616070980346,
+        "rmse_cm_s": {
+          "x": 3.6881776646849342,
+          "y": 4.0621724410658375
+        },
+        "rmse_cm_s_mean": 3.875175052875386
+      },
+      "seed_std": {
+        "r2": {
+          "x": 0.004749805170387733,
+          "y": 0.013477818326785055
+        },
+        "r2_mean": 0.00906464068967755,
+        "pearson_r": {
+          "x": 0.002797395374714867,
+          "y": 0.008176842018709234
+        },
+        "pearson_r_mean": 0.0053789895052358296,
+        "rmse_cm_s": {
+          "x": 0.029798766034885082,
+          "y": 0.09082617347840502
+        },
+        "rmse_cm_s_mean": 0.059994478429985704
+      }
+    }
+  },
+  "checks": [
+    {
+      "name": "the recording matches the frozen identity",
+      "passed": true,
+      "detail": "SHA-256 83befb05b5d2... verified before any held-out trial was built"
+    },
+    {
+      "name": "exactly the eligible held-out trials were evaluated",
+      "passed": true,
+      "detail": "29 held-out trials"
+    },
+    {
+      "name": "the targets follow the official target rule",
+      "passed": true,
+      "detail": "10215 targets with 200 ms of history before the 50 ms lag inside each trial"
+    },
+    {
+      "name": "every model has one finite prediction for every target",
+      "passed": true,
+      "detail": "6 prediction sets over identical ordered target rows"
+    },
+    {
+      "name": "the Kalman filter filled every target exactly once",
+      "passed": true,
+      "detail": "each target read from its own trial's recursive pass"
+    },
+    {
+      "name": "the saved table reproduces the predictions that were scored",
+      "passed": true,
+      "detail": "10215 rows round-trip within 1e-12"
+    }
+  ],
+  "all_checks_passed": true,
+  "artifacts": {
+    "predictions": "results/held_out_evaluation/held_out_predictions.csv",
+    "summary": "results/held_out_evaluation/summary.json"
+  },
+  "artifact_hashes": {
+    "predictions_sha256": "62a299e0e5f5a7aa6c3a6f991b219ab12076eea005b257c254b96b567c3bd3d0"
+  }
+}
