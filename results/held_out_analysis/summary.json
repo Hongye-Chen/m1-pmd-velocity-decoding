@@ -1,0 +1,605 @@
+{
+  "scope": "descriptive analysis of the 29 eligible held-out trials of one session; no model was refitted or rerun and no target was excluded",
+  "inputs": {
+    "predictions": "results/held_out_evaluation/held_out_predictions.csv",
+    "predictions_sha256": "62a299e0e5f5a7aa6c3a6f991b219ab12076eea005b257c254b96b567c3bd3d0",
+    "held_out_summary": "results/held_out_evaluation/summary.json",
+    "held_out_summary_sha256": "7c8fd0f47ecd5e128f8a538a4150dc1f70608d3a8e6e0a95b31222c717175976"
+  },
+  "definitions": {
+    "trial_rmse": "RMSE of each velocity axis over a trial's targets and the arithmetic mean of the two axes, in cm/s",
+    "gru": "each seed is scored separately; gru_seed_mean and gru_seed_std are the mean and sample standard deviation (ddof=1) of the seed-level RMSE; predictions are never averaged across seeds",
+    "selection_score": "mean of the Ridge, Kalman, and GRU seed-mean trial RMSE (mean of axes), in cm/s; the constant baseline is not included",
+    "selection_rule": "trials ordered by selection score, ties by trial row; the lowest is the first, the highest the last, and the median at position (n - 1) // 2, the lower middle for an even count",
+    "trajectories": "true and predicted velocity integrated over the saved target times by the trapezoidal rule, every series starting at (0, 0) cm at the trial's first target",
+    "trial_figures": "true velocity with Ridge, Kalman, and each GRU seed; the constant baseline predicts one fixed velocity and is not drawn"
+  },
+  "trial_rmse_cm_s": {
+    "constant": {
+      "x": {
+        "min": 3.420925687758436,
+        "q1": 5.775920895270088,
+        "median": 6.775648181143393,
+        "q3": 7.61912917659197,
+        "max": 10.184305905924555
+      },
+      "y": {
+        "min": 3.1781805645727195,
+        "q1": 5.837509507278762,
+        "median": 7.232821568068666,
+        "q3": 8.301172740640483,
+        "max": 10.30180225772257
+      },
+      "mean": {
+        "min": 4.537616743983323,
+        "q1": 6.280185683608696,
+        "median": 6.721048978358897,
+        "q3": 7.678893726138542,
+        "max": 9.61754006091643
+      }
+    },
+    "ridge": {
+      "x": {
+        "min": 3.0763711247670424,
+        "q1": 3.776077917425553,
+        "median": 4.172520766020008,
+        "q3": 4.914411167136616,
+        "max": 6.4879624427328455
+      },
+      "y": {
+        "min": 2.7404954164638746,
+        "q1": 4.292000660335718,
+        "median": 4.648540691810809,
+        "q3": 5.339113925166464,
+        "max": 6.772790173439575
+      },
+      "mean": {
+        "min": 3.083628014403878,
+        "q1": 4.176119535573068,
+        "median": 4.646862047115622,
+        "q3": 4.95954888269703,
+        "max": 6.576966863003381
+      }
+    },
+    "kalman": {
+      "x": {
+        "min": 2.9139155824694876,
+        "q1": 4.14846602642462,
+        "median": 4.433037676324752,
+        "q3": 5.0581413946615985,
+        "max": 6.41969107859694
+      },
+      "y": {
+        "min": 3.29154741921437,
+        "q1": 4.968110142315235,
+        "median": 5.166204048968054,
+        "q3": 6.157771098640001,
+        "max": 7.635715995132827
+      },
+      "mean": {
+        "min": 4.077515114033179,
+        "q1": 4.599034398433851,
+        "median": 4.797058536106593,
+        "q3": 5.404186201675897,
+        "max": 6.589769652485565
+      }
+    },
+    "gru_seed_mean": {
+      "x": {
+        "min": 2.5011995137415393,
+        "q1": 2.9450228232147766,
+        "median": 3.571757045775938,
+        "q3": 4.040252450728513,
+        "max": 6.212605960224032
+      },
+      "y": {
+        "min": 2.4869365812859425,
+        "q1": 3.043824616042732,
+        "median": 3.5923526802137524,
+        "q3": 4.273588815849138,
+        "max": 6.09910546968922
+      },
+      "mean": {
+        "min": 2.586793653190392,
+        "q1": 3.157115998602169,
+        "median": 3.64948957351619,
+        "q3": 4.080385424435018,
+        "max": 5.885379361253077
+      }
+    }
+  },
+  "error_by_speed": {
+    "definition": "speed is the norm of the true velocity; boundaries are the 0th, 25th, 50th, 75th, and 100th percentiles of all held-out target speeds (numpy 'linear' method); the first quartile is [b0, b1] and each later quartile is (b_k, b_k+1]",
+    "boundaries_cm_s": [
+      0.0015685843804353079,
+      1.7444376978150355,
+      5.568449827843906,
+      12.200472771307561,
+      36.846581755502605
+    ],
+    "bins": [
+      {
+        "quartile": 1,
+        "lower_cm_s": 0.0015685843804353079,
+        "upper_cm_s": 1.7444376978150355,
+        "n_samples": 2554,
+        "rmse_cm_s": {
+          "constant": {
+            "x": 0.701910363847415,
+            "y": 0.9042255886611298,
+            "mean": 0.8030679762542724
+          },
+          "ridge": {
+            "x": 3.111029773324508,
+            "y": 3.2191051457021813,
+            "mean": 3.1650674595133443
+          },
+          "kalman": {
+            "x": 3.3219910600640064,
+            "y": 3.7093288086636194,
+            "mean": 3.515659934363813
+          },
+          "gru_seed_mean": {
+            "x": 1.9494956819989036,
+            "y": 2.0153397167463547,
+            "mean": 1.982417699372629
+          },
+          "gru_seed_std": {
+            "x": 0.009214072611096509,
+            "y": 0.05951036869047095,
+            "mean": 0.025261675381383613
+          }
+        }
+      },
+      {
+        "quartile": 2,
+        "lower_cm_s": 1.7444376978150355,
+        "upper_cm_s": 5.568449827843906,
+        "n_samples": 2554,
+        "rmse_cm_s": {
+          "constant": {
+            "x": 2.539723631349045,
+            "y": 2.573110510175007,
+            "mean": 2.556417070762026
+          },
+          "ridge": {
+            "x": 3.1379298443362145,
+            "y": 3.395409384038978,
+            "mean": 3.266669614187596
+          },
+          "kalman": {
+            "x": 3.8908873102757284,
+            "y": 4.358518052260576,
+            "mean": 4.124702681268152
+          },
+          "gru_seed_mean": {
+            "x": 2.5986064251277656,
+            "y": 2.8179701666851584,
+            "mean": 2.708288295906462
+          },
+          "gru_seed_std": {
+            "x": 0.0726260270907719,
+            "y": 0.06576156618954802,
+            "mean": 0.059598133787979436
+          }
+        }
+      },
+      {
+        "quartile": 3,
+        "lower_cm_s": 5.568449827843906,
+        "upper_cm_s": 12.200472771307561,
+        "n_samples": 2553,
+        "rmse_cm_s": {
+          "constant": {
+            "x": 6.6334725902896166,
+            "y": 5.7791747555543225,
+            "mean": 6.20632367292197
+          },
+          "ridge": {
+            "x": 4.022974160578701,
+            "y": 3.979040237615073,
+            "mean": 4.001007199096887
+          },
+          "kalman": {
+            "x": 4.467840434117428,
+            "y": 4.987893925594733,
+            "mean": 4.72786717985608
+          },
+          "gru_seed_mean": {
+            "x": 3.7380882053878906,
+            "y": 3.7446631037562774,
+            "mean": 3.7413756545720838
+          },
+          "gru_seed_std": {
+            "x": 0.006896821166596547,
+            "y": 0.07429714762142844,
+            "mean": 0.03730275217784921
+          }
+        }
+      },
+      {
+        "quartile": 4,
+        "lower_cm_s": 12.200472771307561,
+        "upper_cm_s": 36.846581755502605,
+        "n_samples": 2554,
+        "rmse_cm_s": {
+          "constant": {
+            "x": 11.580162052986935,
+            "y": 13.305206225557916,
+            "mean": 12.442684139272426
+          },
+          "ridge": {
+            "x": 6.62154686432993,
+            "y": 7.889188640333229,
+            "mean": 7.25536775233158
+          },
+          "kalman": {
+            "x": 6.11527152800297,
+            "y": 8.411942905767237,
+            "mean": 7.263607216885104
+          },
+          "gru_seed_mean": {
+            "x": 5.466390155374555,
+            "y": 6.321227141457624,
+            "mean": 5.89380864841609
+          },
+          "gru_seed_std": {
+            "x": 0.04763237732179064,
+            "y": 0.22622481024617141,
+            "mean": 0.130064432425244
+          }
+        }
+      }
+    ]
+  },
+  "error_by_direction": {
+    "definition": "direction is atan2(true vy, true vx) in degrees, counterclockwise from +x; sector k is centred on 45k degrees and covers [45k - 22.5, 45k + 22.5) modulo 360; samples with zero true speed have no direction and are excluded",
+    "excluded_zero_speed_samples": 0,
+    "sectors": [
+      {
+        "sector": 0,
+        "center_deg": 0.0,
+        "lower_deg": -22.5,
+        "upper_deg": 22.5,
+        "n_samples": 1225,
+        "rmse_cm_s": {
+          "constant": {
+            "x": 9.429987466127242,
+            "y": 2.2609375265181217,
+            "mean": 5.845462496322682
+          },
+          "ridge": {
+            "x": 5.546306846034639,
+            "y": 3.365770806031051,
+            "mean": 4.456038826032845
+          },
+          "kalman": {
+            "x": 4.959457565353911,
+            "y": 4.086481694033834,
+            "mean": 4.522969629693872
+          },
+          "gru_seed_mean": {
+            "x": 4.658167433616601,
+            "y": 3.2008176611614387,
+            "mean": 3.9294925473890197
+          },
+          "gru_seed_std": {
+            "x": 0.06823356103893691,
+            "y": 0.13245614152538698,
+            "mean": 0.0963233088232209
+          }
+        }
+      },
+      {
+        "sector": 1,
+        "center_deg": 45.0,
+        "lower_deg": 22.5,
+        "upper_deg": 67.5,
+        "n_samples": 1403,
+        "rmse_cm_s": {
+          "constant": {
+            "x": 6.7761207996035875,
+            "y": 7.877586990824905,
+            "mean": 7.326853895214246
+          },
+          "ridge": {
+            "x": 5.001273905915281,
+            "y": 4.812479947743055,
+            "mean": 4.9068769268291685
+          },
+          "kalman": {
+            "x": 4.785265455720505,
+            "y": 5.910565061553005,
+            "mean": 5.347915258636755
+          },
+          "gru_seed_mean": {
+            "x": 4.008677386686256,
+            "y": 3.8604347845895917,
+            "mean": 3.934556085637924
+          },
+          "gru_seed_std": {
+            "x": 0.10750011895220395,
+            "y": 0.009203333166256216,
+            "mean": 0.05833768087503585
+          }
+        }
+      },
+      {
+        "sector": 2,
+        "center_deg": 90.0,
+        "lower_deg": 67.5,
+        "upper_deg": 112.5,
+        "n_samples": 1323,
+        "rmse_cm_s": {
+          "constant": {
+            "x": 2.2022451156947387,
+            "y": 9.484336154604732,
+            "mean": 5.843290635149735
+          },
+          "ridge": {
+            "x": 3.3250918133870795,
+            "y": 5.189456699721747,
+            "mean": 4.257274256554413
+          },
+          "kalman": {
+            "x": 4.0932837720084505,
+            "y": 5.755193423186416,
+            "mean": 4.924238597597434
+          },
+          "gru_seed_mean": {
+            "x": 3.3300451617905065,
+            "y": 4.311424729404831,
+            "mean": 3.820734945597669
+          },
+          "gru_seed_std": {
+            "x": 0.10761230720198017,
+            "y": 0.09980792969326219,
+            "mean": 0.08763768668886744
+          }
+        }
+      },
+      {
+        "sector": 3,
+        "center_deg": 135.0,
+        "lower_deg": 112.5,
+        "upper_deg": 157.5,
+        "n_samples": 1038,
+        "rmse_cm_s": {
+          "constant": {
+            "x": 7.571551155682923,
+            "y": 8.04340614792066,
+            "mean": 7.807478651801791
+          },
+          "ridge": {
+            "x": 4.151487392294182,
+            "y": 5.228976590474961,
+            "mean": 4.690231991384572
+          },
+          "kalman": {
+            "x": 4.332439639199231,
+            "y": 5.23711667469566,
+            "mean": 4.7847781569474455
+          },
+          "gru_seed_mean": {
+            "x": 3.362660123792993,
+            "y": 4.364901514203304,
+            "mean": 3.863780818998148
+          },
+          "gru_seed_std": {
+            "x": 0.07488902889538206,
+            "y": 0.22726185599957896,
+            "mean": 0.11050200801206513
+          }
+        }
+      },
+      {
+        "sector": 4,
+        "center_deg": 180.0,
+        "lower_deg": 157.5,
+        "upper_deg": 202.5,
+        "n_samples": 1481,
+        "rmse_cm_s": {
+          "constant": {
+            "x": 9.167569669183223,
+            "y": 1.8215066713741737,
+            "mean": 5.494538170278698
+          },
+          "ridge": {
+            "x": 5.474461132291129,
+            "y": 3.2620293712856507,
+            "mean": 4.36824525178839
+          },
+          "kalman": {
+            "x": 5.692657197823853,
+            "y": 4.155105758138776,
+            "mean": 4.923881477981315
+          },
+          "gru_seed_mean": {
+            "x": 4.1904447633839625,
+            "y": 2.6367309292221086,
+            "mean": 3.413587846303036
+          },
+          "gru_seed_std": {
+            "x": 0.12817508695615687,
+            "y": 0.012565013599027697,
+            "mean": 0.0695112138450525
+          }
+        }
+      },
+      {
+        "sector": 5,
+        "center_deg": 225.0,
+        "lower_deg": 202.5,
+        "upper_deg": 247.5,
+        "n_samples": 1634,
+        "rmse_cm_s": {
+          "constant": {
+            "x": 4.496885498756242,
+            "y": 4.931688509342465,
+            "mean": 4.714287004049353
+          },
+          "ridge": {
+            "x": 3.814268062324805,
+            "y": 4.2304694660448945,
+            "mean": 4.02236876418485
+          },
+          "kalman": {
+            "x": 4.21326375021393,
+            "y": 4.628686538327624,
+            "mean": 4.420975144270777
+          },
+          "gru_seed_mean": {
+            "x": 2.9669157316028336,
+            "y": 3.8376483155780226,
+            "mean": 3.4022820235904283
+          },
+          "gru_seed_std": {
+            "x": 0.10984589336739974,
+            "y": 0.09232277349438874,
+            "mean": 0.05091991601289332
+          }
+        }
+      },
+      {
+        "sector": 6,
+        "center_deg": 270.0,
+        "lower_deg": 247.5,
+        "upper_deg": 292.5,
+        "n_samples": 968,
+        "rmse_cm_s": {
+          "constant": {
+            "x": 2.658044919625482,
+            "y": 12.867064269442338,
+            "mean": 7.76255459453391
+          },
+          "ridge": {
+            "x": 3.5951083657981697,
+            "y": 7.8311963561240105,
+            "mean": 5.71315236096109
+          },
+          "kalman": {
+            "x": 3.974355207119414,
+            "y": 8.948535812180529,
+            "mean": 6.461445509649971
+          },
+          "gru_seed_mean": {
+            "x": 2.942220201631836,
+            "y": 5.797284404863686,
+            "mean": 4.36975230324776
+          },
+          "gru_seed_std": {
+            "x": 0.04967878590051827,
+            "y": 0.25447974821351566,
+            "mean": 0.1325431104383038
+          }
+        }
+      },
+      {
+        "sector": 7,
+        "center_deg": 315.0,
+        "lower_deg": 292.5,
+        "upper_deg": 337.5,
+        "n_samples": 1143,
+        "rmse_cm_s": {
+          "constant": {
+            "x": 7.76605084647068,
+            "y": 7.936109481303397,
+            "mean": 7.851080163887039
+          },
+          "ridge": {
+            "x": 3.879616005555784,
+            "y": 5.955676019243124,
+            "mean": 4.917646012399453
+          },
+          "kalman": {
+            "x": 3.870761987107074,
+            "y": 6.483434261083202,
+            "mean": 5.177098124095139
+          },
+          "gru_seed_mean": {
+            "x": 3.572485808290202,
+            "y": 4.5575089237958535,
+            "mean": 4.064997366043028
+          },
+          "gru_seed_std": {
+            "x": 0.0904269853850916,
+            "y": 0.2369601428549225,
+            "mean": 0.08144551686243111
+          }
+        }
+      }
+    ]
+  },
+  "selected_trials": {
+    "lowest": {
+      "trial_row": 212,
+      "trial_id": 212,
+      "rank": 1,
+      "n_trials": 29,
+      "n_samples": 279,
+      "selection_score": 3.3078767631313633,
+      "figure": "reports/figures/held_out_lowest_error_trial.png"
+    },
+    "median": {
+      "trial_row": 207,
+      "trial_id": 207,
+      "rank": 15,
+      "n_trials": 29,
+      "n_samples": 305,
+      "selection_score": 4.542401540313501,
+      "figure": "reports/figures/held_out_median_trial.png"
+    },
+    "highest": {
+      "trial_row": 214,
+      "trial_id": 214,
+      "rank": 29,
+      "n_trials": 29,
+      "n_samples": 292,
+      "selection_score": 6.350705292247341,
+      "figure": "reports/figures/held_out_highest_error_trial.png"
+    }
+  },
+  "checks": [
+    {
+      "name": "the inputs are the frozen held-out outputs",
+      "passed": true,
+      "detail": "prediction table SHA-256 62a299e0e5f5... matches the held-out summary"
+    },
+    {
+      "name": "the prediction table has every column the analysis reads",
+      "passed": true,
+      "detail": "19 columns"
+    },
+    {
+      "name": "the table holds every held-out target once with finite values",
+      "passed": true,
+      "detail": "10215 targets from 29 trials"
+    },
+    {
+      "name": "each trial's targets are consecutive behavior-grid steps in time order",
+      "passed": true,
+      "detail": "required for integrating velocity into trajectories"
+    },
+    {
+      "name": "the saved predictions reproduce the overall held-out scores",
+      "passed": true,
+      "detail": "largest difference 0.0e+00 (tolerance 1e-12)"
+    }
+  ],
+  "all_checks_passed": true,
+  "artifacts": {
+    "trial_metrics": "results/held_out_analysis/trial_metrics.csv",
+    "summary": "results/held_out_analysis/summary.json",
+    "figures": {
+      "overall": "reports/figures/held_out_overall.png",
+      "trial_rmse": "reports/figures/held_out_trial_rmse.png",
+      "error_by_speed_direction": "reports/figures/held_out_error_by_speed_direction.png",
+      "lowest": "reports/figures/held_out_lowest_error_trial.png",
+      "median": "reports/figures/held_out_median_trial.png",
+      "highest": "reports/figures/held_out_highest_error_trial.png"
+    }
+  },
+  "artifact_hashes": {
+    "trial_metrics_sha256": "227a01bb5f6000838cc4d22e56c9791c503821e096969eca8dc03c1cd801dfc4"
+  }
+}

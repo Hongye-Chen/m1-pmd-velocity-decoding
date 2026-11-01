@@ -28,6 +28,26 @@ and trained models are under
 Held-out metrics and predictions are under
 [`results/held_out_evaluation/`](results/held_out_evaluation/).
 
+### Error analysis
+
+Across the 29 held-out trials, median RMSE was 3.65 cm/s for GRU, 4.65 cm/s for
+Ridge, and 4.80 cm/s for Kalman. GRU had the lowest error among the neural
+decoders in every speed quartile and movement-direction sector. The constant
+baseline had the lowest RMSE in the two slowest quartiles, while GRU led in the
+two faster quartiles.
+
+![Trial-level held-out RMSE](reports/figures/held_out_trial_rmse.png)
+
+![Held-out error by speed and direction](reports/figures/held_out_error_by_speed_direction.png)
+
+Velocity traces and integrated relative trajectories are shown for objectively
+selected [low-error](reports/figures/held_out_lowest_error_trial.png),
+[median-error](reports/figures/held_out_median_trial.png), and
+[high-error](reports/figures/held_out_highest_error_trial.png) trials. The
+trajectories start from a common origin and are not absolute-position
+predictions. Trial metrics and the complete analysis summary are available in
+[`results/held_out_analysis/`](results/held_out_analysis/).
+
 ## Data
 
 The NWB recording is not included in the repository:
