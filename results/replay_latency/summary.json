@@ -1,0 +1,239 @@
+{
+  "procedure": {
+    "targets": "the official validation targets; held-out trials are not built",
+    "references": "batch predictions regenerated in memory from the frozen Ridge decoder, the three GRU checkpoints, and the official recursive Kalman validation path",
+    "replay": "every unit's spikes merged in time order and revealed only once the 10 ms behavior clock has passed them; the buffer is emptied at each trial start and holds only spikes a later window can use",
+    "kalman": "the official filter runs unchanged on 50 ms intervals counted from the same replay and is instrumented to record every step and update"
+  },
+  "recording": {
+    "name": "sub-T_ses-RT-20130906_behavior+ecephys.nwb",
+    "sha256": "83befb05b5d265c92e03c544c420e2bc0b6c7d3248fa14492c17f39a8aa1f124"
+  },
+  "targets": {
+    "validation_targets": 8183,
+    "validation_trials": 24,
+    "identity_sha256": "d432513d2454389ab98f3309e38a6393ca419b26874a26e5dac3aac238bb4419",
+    "source": "results/baselines/validation_predictions.csv",
+    "source_sha256": "7127fa1fcd2bceaf78983dc43bc1b55d6136126485fa7b92984fa1db2b47f556"
+  },
+  "replay": {
+    "targets": 8183,
+    "trials": 24,
+    "counts_identical_to_batch": true,
+    "ridge": {
+      "max_abs_difference_cm_s": 2.1316282072803006e-14,
+      "atol": 1e-10
+    },
+    "gru": {
+      "atol": 1e-05,
+      "rtol": 1e-05,
+      "max_abs_difference_cm_s": {
+        "0": 7.41675659199359e-06,
+        "1": 6.866816534056852e-06,
+        "2": 6.866816534056852e-06
+      }
+    },
+    "kalman": {
+      "max_abs_difference_cm_s": 0.0,
+      "filter_steps": 8783,
+      "updates": 1717,
+      "prediction_only_steps": 7066,
+      "max_initial_state_deviation": 1.1102230246251565e-16,
+      "max_propagation_deviation": {
+        "state": 1.3322676295501878e-15,
+        "covariance": 1.9984014443252818e-15
+      }
+    }
+  },
+  "checks": [
+    {
+      "name": "the targets are the official 8,183 validation targets from 24 trials",
+      "passed": true,
+      "detail": "identity SHA-256 d432513d2454... matches the Kalman validation record; the source matches the GRU configuration"
+    },
+    {
+      "name": "the Ridge batch reference matches the saved validation predictions",
+      "passed": true,
+      "detail": "largest difference 0.0e+00 cm/s"
+    },
+    {
+      "name": "the GRU batch references reproduce the recorded validation R2",
+      "passed": true,
+      "detail": "seed-mean R2 0.676432; largest difference 0.0e+00"
+    },
+    {
+      "name": "the Kalman batch reference reproduces the recorded validation metrics",
+      "passed": true,
+      "detail": "mean R2 0.500197; largest difference 1.8e-15"
+    },
+    {
+      "name": "replay visits every target once, in trial and time order",
+      "passed": true,
+      "detail": "8183 targets from 24 trials; the buffer is emptied at every trial start"
+    },
+    {
+      "name": "replay never reveals a spike at or after the current time",
+      "passed": true,
+      "detail": "latest revealed spike precedes its target by at least 0.033 ms"
+    },
+    {
+      "name": "replayed four-bin counts equal the batch counts",
+      "passed": true,
+      "detail": "200 ms in four 50 ms bins over [t - 250 ms, t - 50 ms) for every target"
+    },
+    {
+      "name": "every replayed prediction is finite",
+      "passed": true,
+      "detail": "Ridge, Kalman, and three GRU seeds"
+    },
+    {
+      "name": "Ridge replay matches its batch predictions",
+      "passed": true,
+      "detail": "largest difference 2.1e-14 cm/s (tolerance 1e-10)"
+    },
+    {
+      "name": "every GRU seed's replay matches its batch predictions",
+      "passed": true,
+      "detail": "largest differences seed 0 7.4e-06, seed 1 6.9e-06, seed 2 6.9e-06 cm/s (atol = rtol = 1e-05); hidden state starts at zero for every target"
+    },
+    {
+      "name": "each Kalman trial restarts from its recorded position and the trained prior",
+      "passed": true,
+      "detail": "largest initial-state deviation 1.1e-16; filtering the trials in reverse order gives identical outputs"
+    },
+    {
+      "name": "the Kalman state propagates once per 10 ms step",
+      "passed": true,
+      "detail": "8783 steps; largest deviation from one transition 1.3e-15 (state), 2.0e-15 (covariance)"
+    },
+    {
+      "name": "Kalman updates use fresh, contiguous 50 ms intervals ending 50 ms earlier",
+      "passed": true,
+      "detail": "1717 replayed intervals equal the official schedule"
+    },
+    {
+      "name": "Kalman steps between updates are prediction-only",
+      "passed": true,
+      "detail": "1717 updates, each on its own interval, with four prediction-only steps between consecutive updates"
+    },
+    {
+      "name": "the official Kalman path reproduces its batch output from the replayed intervals",
+      "passed": true,
+      "detail": "largest difference 0.0e+00 cm/s"
+    }
+  ],
+  "all_checks_passed": true,
+  "latency": {
+    "procedure": "per target in timestamp order with trial resets, after the untimed verification replay; models loaded and every input in memory, no file I/O; time.perf_counter_ns with garbage collection paused; each model is timed on the second of two consecutive passes, the first discarded as warm-up. Preprocessing reveals the spikes that arrived since the previous 10 ms step, discards expired ones, and counts the model's window (Ridge and GRU also normalize it; the GRU copies it to the device). Inference returns the velocity in cm/s (GRU: forward pass and copy back to the host; Kalman: one 10 ms filter step, including any scheduled update).",
+    "unit": "microseconds",
+    "environment": {
+      "python": "3.11.15",
+      "numpy": "2.4.6",
+      "scipy": "1.17.1",
+      "torch": "2.12.0+cu126",
+      "platform": "Windows-10-10.0.26200-SP0",
+      "processor": "AMD64 Family 25 Model 97 Stepping 2, AuthenticAMD",
+      "logical_cpus": 32,
+      "gru_device": {
+        "device": "cuda",
+        "device_name": "NVIDIA GeForce RTX 4090",
+        "torch_version": "2.12.0+cu126",
+        "cuda_version": "12.6",
+        "cudnn_version": 91002,
+        "deterministic_algorithms": true,
+        "cudnn_deterministic": true,
+        "cudnn_benchmark": false,
+        "allow_tf32": false,
+        "cublas_workspace_config": ":4096:8"
+      }
+    },
+    "models": {
+      "ridge": {
+        "device": "cpu",
+        "targets": 8183,
+        "preprocessing_us": {
+          "median": 11.8,
+          "p95": 12.1
+        },
+        "inference_us": {
+          "median": 3.3,
+          "p95": 3.4
+        },
+        "total_us": {
+          "median": 15.1,
+          "p95": 15.5
+        }
+      },
+      "kalman": {
+        "device": "cpu",
+        "targets": 8183,
+        "preprocessing_us": {
+          "median": 1.2,
+          "p95": 9.1
+        },
+        "inference_us": {
+          "median": 49.0,
+          "p95": 130.3
+        },
+        "total_us": {
+          "median": 50.2,
+          "p95": 139.4
+        },
+        "update_steps": 1645,
+        "total_at_update_steps_us": {
+          "median": 137.8,
+          "p95": 146.3
+        }
+      },
+      "gru_seed0": {
+        "device": "cuda",
+        "targets": 8183,
+        "preprocessing_us": {
+          "median": 79.2,
+          "p95": 85.1
+        },
+        "inference_us": {
+          "median": 359.4,
+          "p95": 390.2
+        },
+        "total_us": {
+          "median": 439.2,
+          "p95": 470.5
+        }
+      },
+      "gru_seed1": {
+        "device": "cuda",
+        "targets": 8183,
+        "preprocessing_us": {
+          "median": 78.9,
+          "p95": 85.2
+        },
+        "inference_us": {
+          "median": 359.1,
+          "p95": 390.0
+        },
+        "total_us": {
+          "median": 438.6,
+          "p95": 470.2
+        }
+      },
+      "gru_seed2": {
+        "device": "cuda",
+        "targets": 8183,
+        "preprocessing_us": {
+          "median": 78.8,
+          "p95": 85.1
+        },
+        "inference_us": {
+          "median": 359.8,
+          "p95": 391.5
+        },
+        "total_us": {
+          "median": 439.4,
+          "p95": 472.5
+        }
+      }
+    }
+  },
+  "held_out": "not built or read"
+}

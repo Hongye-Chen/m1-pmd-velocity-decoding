@@ -18,11 +18,13 @@ values are the arithmetic mean across three independently trained models.
 | GRU, three-seed mean | 0.705882, 0.696905 | **0.701393** | 0.838 | 3.875 |
 
 The constant model predicts the mean training velocity and uses no neural data.
-Model-selection and validation results are available in
-[`results/baseline_summary.json`](results/baseline_summary.json),
-[`results/kalman_decoder_selection/`](results/kalman_decoder_selection/), and
-[`results/kalman_validation/`](results/kalman_validation/). GRU selection results
-and trained models are under
+Constant and Ridge artifacts are under
+[`results/baselines/`](results/baselines/), with validation metrics in
+[`results/baseline_summary.json`](results/baseline_summary.json). Kalman results
+and models are under
+[`results/kalman_decoder_selection/`](results/kalman_decoder_selection/) and
+[`results/kalman_validation/`](results/kalman_validation/). GRU results and
+trained models are under
 [`results/gru_input_selection/`](results/gru_input_selection/) and
 [`results/gru_architecture_selection/`](results/gru_architecture_selection/).
 Held-out metrics and predictions are under
@@ -43,9 +45,8 @@ two faster quartiles.
 Velocity traces and integrated relative trajectories are shown for objectively
 selected [low-error](reports/figures/held_out_lowest_error_trial.png),
 [median-error](reports/figures/held_out_median_trial.png), and
-[high-error](reports/figures/held_out_highest_error_trial.png) trials. The
-trajectories start from a common origin and are not absolute-position
-predictions. Trial metrics and the complete analysis summary are available in
+[high-error](reports/figures/held_out_highest_error_trial.png) trials. Trial
+metrics and the complete analysis summary are available in
 [`results/held_out_analysis/`](results/held_out_analysis/).
 
 ## Data
@@ -60,7 +61,6 @@ The NWB recording is not included in the repository:
 | Subject and session | subject T, random-target task, 2013-09-06 |
 | File | `sub-T/sub-T_ses-RT-20130906_behavior+ecephys.nwb` |
 | Size | 41,528,428 bytes |
-| SHA-256 | `83befb05b5d265c92e03c544c420e2bc0b6c7d3248fa14492c17f39a8aa1f124` |
 
 Download it to any location outside the repository.
 
@@ -73,8 +73,7 @@ conda env create -f environment.yml
 conda activate neural-decoding
 ```
 
-Create `configs/local.yaml`, which is untracked so machine-specific paths never
-enter version control:
+Create `configs/local.yaml` with the local NWB path:
 
 ```yaml
 paths:
@@ -127,6 +126,22 @@ is in
 [`results/gru_architecture_selection/final_configuration.json`](results/gru_architecture_selection/final_configuration.json);
 the directory also contains all three fitted seed checkpoints.
 
+### Incremental replay and latency
+
+Timestamp-ordered replay on all 8,183 validation targets reproduced the batch
+predictions. The largest difference was \(2.1\times10^{-14}\) cm/s for Ridge,
+\(7.4\times10^{-6}\) cm/s across the three GRU seeds, and zero for Kalman.
+
+With models loaded and file I/O excluded, p95 compute time per target was 0.016
+ms for Ridge, 0.139 ms for Kalman, and at most 0.473 ms for a GRU seed. Ridge
+and Kalman ran on CPU; GRU ran on an NVIDIA RTX 4090. These measurements cover
+decoder computation, not end-to-end acquisition or control latency.
+
+The replay implementation is in
+[`scripts/verify_replay_latency.py`](scripts/verify_replay_latency.py), with
+methods, checks, environment details, and results in
+[`results/replay_latency/summary.json`](results/replay_latency/summary.json).
+
 ## Limitations
 
 This is an offline, within-session result from one subject and one recording.
@@ -142,9 +157,7 @@ calibrated probabilistic model.
 pytest
 ```
 
-The test suite is deliberately independent of the recording, so it runs in
-seconds without the data present. Runtime checks that need the recording execute
-inside the relevant data-processing commands.
+The tests run without the NWB recording.
 
 ## Repository layout
 
