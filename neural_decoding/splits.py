@@ -1,10 +1,4 @@
-"""Trial split assignment and the frozen eligibility rules for the session.
-
-Splits are assigned from the original NWB trial row, never from a filtered or
-renumbered table. Eligibility is evaluated afterwards and only removes trials, so
-dropping one can never move another into a different split. Reversing that order
-would leak held-out trials into training without any visible failure.
-"""
+"""Trial eligibility rules and train, validation, and test split assignment."""
 
 from __future__ import annotations
 

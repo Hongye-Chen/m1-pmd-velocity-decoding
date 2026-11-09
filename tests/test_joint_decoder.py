@@ -1,4 +1,4 @@
-"""Focused synthetic tests for the clean-room joint decoder protocol."""
+"""Tests for Kalman process, observation, and filtering code."""
 
 from __future__ import annotations
 

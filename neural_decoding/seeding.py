@@ -13,9 +13,6 @@ __all__ = ["new_rng", "set_global_seed"]
 def set_global_seed(seed: int, *, torch_deterministic: bool = True) -> int:
     """Seed the Python, NumPy, and PyTorch global generators.
 
-    PyTorch is seeded only when it is importable, so this helper stays usable in
-    contexts that do not need it.
-
     Args:
         seed: Seed applied to every generator.
         torch_deterministic: Whether to ask cuDNN for deterministic kernels instead

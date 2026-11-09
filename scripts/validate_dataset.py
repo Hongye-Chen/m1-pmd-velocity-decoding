@@ -4,11 +4,6 @@ Run from the repository root with the project environment active::
 
     python -m scripts.validate_dataset
 
-The command verifies the configured NWB file against the frozen dataset decision,
-writes the unit and trial/split manifests, and writes a validation summary. These
-checks run against the actual recording rather than in the test suite, so the test
-suite stays independent of local data.
-
 Exit codes: 0 when every check passes, 1 when a check fails, and 2 when the
 recording is not configured or cannot be identified.
 """
@@ -59,7 +54,7 @@ from neural_decoding.splits import (
 
 @dataclass(frozen=True)
 class Check:
-    """One runtime-validation check against the actual recording."""
+    """Result of one dataset validation check."""
 
     name: str
     passed: bool
@@ -73,7 +68,7 @@ def run_checks(
     trial_manifest: pd.DataFrame,
     manifest_paths: tuple[Path, ...],
 ) -> list[Check]:
-    """Check the loaded session against the frozen dataset decision."""
+    """Check the loaded session against the expected dataset properties."""
     checks: list[Check] = []
     identity = session.identity
 
@@ -150,6 +145,7 @@ def run_checks(
     for name, array in (
         ("position", session.cursor_position),
         ("velocity", session.cursor_velocity),
+        ("acceleration", session.cursor_acceleration),
     ):
         checks.append(
             Check(
@@ -293,7 +289,7 @@ def run_checks(
 def build_summary(
     session: SessionData, checks: list[Check], artifacts: dict[str, str]
 ) -> dict[str, object]:
-    """Assemble the machine-readable validation summary."""
+    """Build the dataset validation summary."""
     trials = session.trials
     trimming = session.trimming
     timestamps = session.behavior_timestamps
@@ -365,82 +361,6 @@ def build_summary(
     }
 
 
-def render_markdown(summary: dict[str, object]) -> str:
-    """Render the concise human-readable validation summary."""
-    dataset = summary["dataset"]
-    file_info = summary["file"]
-    units = summary["units"]
-    behavior = summary["behavior"]
-    spikes = summary["spikes"]
-    trials = summary["trials"]
-
-    lines = [
-        "# Dataset validation summary",
-        "",
-        "## Recording",
-        "",
-        f"- Dandiset {dataset['dandiset_id']}, version `{dataset['version']}`",
-        f"- Subject {dataset['subject_id']}, session start {dataset['session_start_time']}",
-        f"- File `{file_info['name']}`, {file_info['size_bytes']} bytes",
-        f"- SHA-256 `{file_info['sha256']}`",
-        "",
-        "## Neural and behavioral data",
-        "",
-        f"- {units['total']} sorted units: "
-        + ", ".join(f"{count} {area}" for area, count in sorted(units["by_area"].items())),
-        f"- {behavior['samples']} cursor samples over {behavior['duration_s']:.2f} s "
-        f"at {behavior['sampling_rate_hz']:.2f} Hz",
-        f"- Cursor series sharing one timebase: "
-        + ", ".join(behavior["series_sharing_timebase"]),
-        f"- Spikes {spikes['raw']} raw, {spikes['trimmed']} retained after trimming to "
-        f"[{spikes['common_interval_s'][0]:.3f}, {spikes['common_interval_s'][1]:.3f}] s",
-        f"- Removed {spikes['removed_before_start']} spikes before the behavioral start "
-        f"and {spikes['removed_after_end']} after the behavioral end",
-        "",
-        "## Trials and splits",
-        "",
-        f"- {trials['total']} trials, {trials['eligible']} eligible after the frozen rules",
-        f"- Excluded artifact rows: {trials['excluded_rows']}",
-        "",
-        "| Split | Original rows | Assigned | Retained |",
-        "| --- | --- | --- | --- |",
-    ]
-    for name, bounds in trials["split_row_ranges"].items():
-        lines.append(
-            f"| {name} | {bounds[0]}-{bounds[1]} | {trials['assigned_by_split'][name]} "
-            f"| {trials['retained_by_split'][name]} |"
-        )
-
-    lines += [
-        "",
-        "Eligibility rule pass counts:",
-        "",
-    ]
-    lines += [f"- `{flag}`: {count}" for flag, count in trials["rule_pass_counts"].items()]
-
-    lines += [
-        "",
-        "## Checks",
-        "",
-        "| Check | Result | Detail |",
-        "| --- | --- | --- |",
-    ]
-    for check in summary["checks"]:
-        lines.append(
-            f"| {check['name']} | {'pass' if check['passed'] else 'FAIL'} | {check['detail']} |"
-        )
-
-    lines += [
-        "",
-        f"Overall: {'all checks passed' if summary['all_checks_passed'] else 'FAILURES PRESENT'}.",
-        "",
-        "## Artifacts",
-        "",
-    ]
-    lines += [f"- `{path}`" for path in summary["artifacts"].values()]
-    return "\n".join(lines) + "\n"
-
-
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.parse_args(argv)
@@ -477,17 +397,14 @@ def main(argv: list[str] | None = None) -> int:
     )
 
     summary_path = results_dir / "dataset_validation.json"
-    report_path = results_dir / "dataset_validation.md"
     artifacts = {
         "unit_manifest": _repo_relative(units_path),
         "trial_manifest": _repo_relative(trials_path),
         "summary_json": _repo_relative(summary_path),
-        "summary_markdown": _repo_relative(report_path),
     }
 
     summary = build_summary(session, checks, artifacts)
     summary_path.write_text(json.dumps(summary, indent=2) + "\n", encoding="utf-8")
-    report_path.write_text(render_markdown(summary), encoding="utf-8")
 
     _print_report(session, checks, artifacts)
     failures = [check for check in checks if not check.passed]

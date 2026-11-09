@@ -1,6 +1,3 @@
-# Direct dependencies. Compatible ranges keep the project installable while
-# preventing unintended major-version upgrades.
-
 # Runtime
 numpy>=1.26,<3
 scipy>=1.11,<2

@@ -1,8 +1,4 @@
-"""Tests for sequence building and normalization on synthetic spikes.
-
-Spikes sit exactly on bin edges, so off-by-one errors, reversed bin order, or a
-window crossing a trial boundary show up as wrong counts.
-"""
+"""Tests for neural sequence construction and normalization."""
 
 from __future__ import annotations
 

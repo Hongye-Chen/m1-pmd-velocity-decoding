@@ -4,16 +4,6 @@ Usage, from the repository root::
 
     python -m scripts.select_gru_architecture
 
-First checks the input-selection results against their saved hashes and reloads
-its three baseline checkpoints, which are reused rather than retrained. Every
-other configuration in ``configs/gru_architecture_selection.yaml`` is trained
-with each seed using the same inputs and training settings, and the one with the
-best mean R2 across seeds is selected. The test split is not used.
-
-Output goes to ``results/internal/gru_architecture_selection/``; the script will
-not overwrite an existing directory. Only the selected configuration's
-checkpoints are kept.
-
 Exit codes: 0 if all checks pass, 1 if a check or run fails, 2 if the recording
 or an input file is missing.
 """
@@ -96,7 +86,7 @@ _METRIC_COLUMNS = {
 
 @dataclass(frozen=True)
 class FrozenInput:
-    """The verified input-selection protocol, records, and reusable run evidence."""
+    """Input-selection results used by the architecture search."""
 
     protocol: GruProtocol
     protocol_path: Path
@@ -115,7 +105,7 @@ class FrozenInput:
 
 @dataclass(frozen=True)
 class PreparedData:
-    """The frozen targets and normalized sequences shared by every run."""
+    """Normalized training and validation data shared by every run."""
 
     training: FeatureSet
     validation: FeatureSet
@@ -273,7 +263,7 @@ def main(argv: list[str] | None = None) -> int:
 
 
 def _load_frozen_input(root: Path, search: ArchitectureSearch) -> FrozenInput:
-    """Load the input-selection records and prove they are the frozen, passing ones."""
+    """Load and validate the input-selection results."""
     directory = root / search.input_artifacts
     protocol_path = root / search.input_protocol
     paths = [protocol_path, directory / "summary.json", directory / "selected_input.json"]
@@ -348,7 +338,7 @@ def _load_frozen_input(root: Path, search: ArchitectureSearch) -> FrozenInput:
 def _prepare_data(
     root: Path, session: SessionData, frozen: FrozenInput, device_info: DeviceInfo
 ) -> PreparedData:
-    """Rebuild the frozen targets, sequences, and normalization and prove they match."""
+    """Rebuild and verify the selected targets, sequences, and normalization."""
     selected, protocol = frozen.selected, frozen.protocol
     if session.identity.sha256 != selected["recording"]["sha256"]:
         raise GruError("The recording differs from the one used for input selection.")
@@ -448,7 +438,7 @@ def _prepare_data(
 def _restore_reused(
     frozen: FrozenInput, data: PreparedData, plan: RunPlan, device_info: DeviceInfo
 ) -> list[CandidateRun]:
-    """Reload the frozen baseline checkpoints and prove they reproduce their records."""
+    """Load the reused input-selection checkpoints and verify their metrics."""
     device = torch.device(device_info.device)
     protocol, representation, runs = frozen.protocol, frozen.representation, frozen.runs
     restored = []
@@ -542,7 +532,7 @@ def _restore_reused(
 def _determinism_probes(
     data: PreparedData, protocol: GruProtocol, search: ArchitectureSearch
 ) -> dict[str, bool]:
-    """Replay a short training-only run twice per layer/dropout setting and compare weights."""
+    """Check training determinism for each layer and dropout setting."""
     probe = replace(protocol, max_epochs=2)
     subset_x, subset_y = data.train_x[:_PROBE_SAMPLES], data.train_y[:_PROBE_SAMPLES]
     reference = subset_y.double().cpu().numpy()
@@ -676,7 +666,7 @@ def _finite(prediction: np.ndarray, metrics: dict[str, Any]) -> bool:
 
 
 def _pre_training_checks(frozen: FrozenInput, data: PreparedData) -> list[dict[str, Any]]:
-    """Record the gates that had to pass before any training started."""
+    """Return the checks completed before training."""
     return [
         _check(
             "the frozen input selection matches its recorded hashes",
@@ -823,7 +813,7 @@ def _write_final(
     search_sha256: str,
     device_info: DeviceInfo,
 ) -> dict[str, Any]:
-    """Persist the selected configuration's three runs and verify them from disk."""
+    """Save the selected configuration's three runs and verify the files."""
     protocol, representation = frozen.protocol, frozen.representation
     selected = sorted(
         (run for run in candidates if run.architecture == architecture), key=lambda run: run.seed

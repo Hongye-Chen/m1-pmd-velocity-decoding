@@ -1,4 +1,4 @@
-"""Tests for the held-out evaluator's sample alignment, scoring, and run guards."""
+"""Tests for held-out sample alignment and evaluation metrics."""
 
 from __future__ import annotations
 

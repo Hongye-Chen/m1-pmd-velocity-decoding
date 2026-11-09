@@ -1,4 +1,4 @@
-"""Score the official decoders once on the held-out trials.
+"""Evaluate the trained decoders on the held-out trials.
 
 Run from the repository root with the project environment active::
 
@@ -128,12 +128,12 @@ _TABLE_TOLERANCE = 1e-12
 
 
 class EvaluationError(RuntimeError):
-    """Raised when the held-out evaluation would depart from the frozen protocol."""
+    """Raised when held-out evaluation inputs or settings are invalid."""
 
 
 @dataclass(frozen=True)
 class OfficialModels:
-    """Every frozen official decoder, loaded from its tracked artifact."""
+    """Loaded decoder models and GRU normalization."""
 
     constant: ConstantBaseline
     ridge: RidgeDecoder
@@ -145,7 +145,7 @@ class OfficialModels:
 
 @dataclass(frozen=True)
 class PreparedEvaluation:
-    """Everything verified before any held-out trial may be built."""
+    """Inputs prepared for held-out evaluation."""
 
     session: SessionData
     models: OfficialModels
@@ -155,7 +155,7 @@ class PreparedEvaluation:
 
 @dataclass(frozen=True)
 class ModelPrediction:
-    """One model's predictions with the target rows it was asked to predict."""
+    """Predictions and target identifiers for one model."""
 
     name: str
     trial_row: np.ndarray
@@ -166,7 +166,7 @@ class ModelPrediction:
 
 
 def prepare_evaluation(root: Path, config: ProjectConfig) -> PreparedEvaluation:
-    """Verify the recording and load every official model without building held-out data."""
+    """Load and validate the recording, configuration, and model artifacts."""
     spec = FeatureSpec(
         history_ms=config.features.history_ms,
         n_bins=config.features.n_bins,
@@ -187,7 +187,7 @@ def prepare_evaluation(root: Path, config: ProjectConfig) -> PreparedEvaluation:
 
 
 def load_official_models(root: Path, session: SessionData) -> OfficialModels:
-    """Load the tracked official models and confirm they share one frozen protocol."""
+    """Load the trained models and verify their shared feature settings."""
     paths = {name: root / path for name, path in OFFICIAL_ARTIFACTS.items()}
     missing = [
         OFFICIAL_ARTIFACTS[name].as_posix() for name, path in paths.items() if not path.is_file()
@@ -348,7 +348,7 @@ def load_official_models(root: Path, session: SessionData) -> OfficialModels:
 def build_held_out_targets(
     session: SessionData, spec: FeatureSpec
 ) -> tuple[FeatureSet, dict[int, TrialBounds]]:
-    """Build the common held-out targets and confirm they follow the official rule."""
+    """Build the shared held-out targets for all models."""
     rows = _eligible_rows(session, TEST)
     _require(
         len(rows) == EXPECTED_HELD_OUT_TRIALS,
@@ -400,7 +400,7 @@ def expected_target_rows(
 
 
 def identity_frame(session: SessionData, features: FeatureSet) -> pd.DataFrame:
-    """Return target identifiers and true velocity in canonical order."""
+    """Return target identifiers and true velocity in sample order."""
     trial_ids = session.trials.set_index("trial_row")["trial_id"]
     return pd.DataFrame(
         {
@@ -505,7 +505,7 @@ def predict_gru(
 def build_prediction_table(
     identity: pd.DataFrame, predictions: Sequence[ModelPrediction]
 ) -> pd.DataFrame:
-    """Return identifiers, true velocity, and every prediction, refusing misaligned models."""
+    """Combine target data and aligned model predictions in one table."""
     missing = [
         name for name in (*IDENTITY_COLUMNS, *TRUTH_COLUMNS) if name not in identity.columns
     ]
@@ -533,7 +533,7 @@ def build_prediction_table(
 
 
 def score_table(table: pd.DataFrame, names: Sequence[str]) -> dict[str, dict[str, object]]:
-    """Score each named model's columns against the true velocity in the table."""
+    """Calculate metrics for each model in the prediction table."""
     truth = table[list(TRUTH_COLUMNS)].to_numpy(dtype=np.float64)
     return {
         name: summarize_predictions(
@@ -581,7 +581,7 @@ def aggregate_seed_metrics(
 def run_evaluation(
     prepared: PreparedEvaluation, predictions_path: Path, summary_path: Path
 ) -> dict[str, Any]:
-    """Build the held-out targets, predict once with every model, save, then score."""
+    """Build targets, generate predictions, save outputs, and calculate metrics."""
     session, models = prepared.session, prepared.models
     features, bounds = build_held_out_targets(session, prepared.spec)
     logger.info(
@@ -802,7 +802,7 @@ def _require_aligned(
     target_index: np.ndarray,
     target_time: np.ndarray,
 ) -> None:
-    """Refuse a model whose rows, order, or prediction shape differ from the targets."""
+    """Check that prediction identifiers and shape match the targets."""
     if not (
         np.array_equal(np.asarray(prediction.trial_row), trial_row)
         and np.array_equal(np.asarray(prediction.target_index), target_index)

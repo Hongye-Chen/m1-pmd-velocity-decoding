@@ -17,7 +17,7 @@ from neural_decoding.seeding import new_rng, set_global_seed
 
 @pytest.fixture
 def restored_root_logger() -> Iterator[logging.Logger]:
-    """Undo any change a test makes to the root logger."""
+    """Restore the root logger after each test."""
     root = logging.getLogger()
     original_handlers = list(root.handlers)
     original_level = root.level

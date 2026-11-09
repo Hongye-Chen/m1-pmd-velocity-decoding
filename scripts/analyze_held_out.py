@@ -1,4 +1,4 @@
-"""Describe where the frozen decoders erred on the held-out trials.
+"""Analyze decoder errors on the held-out trials.
 
 Run from the repository root with the project environment active::
 
@@ -99,7 +99,7 @@ class AnalysisError(RuntimeError):
 def score_rmse(
     true: np.ndarray, predictions: Mapping[str, np.ndarray]
 ) -> dict[str, dict[str, float]]:
-    """Return per-axis and mean RMSE for every model and the GRU seed mean and spread.
+    """Calculate per-axis and mean RMSE for each model and across GRU seeds.
 
     Each GRU seed is scored on its own predictions; predictions are never averaged
     across seeds.
@@ -117,7 +117,7 @@ def score_rmse(
 
 
 def trial_metrics(table: pd.DataFrame) -> pd.DataFrame:
-    """Return one row per trial with every model's trial RMSE and the selection score."""
+    """Calculate trial-level RMSE and the score used to select example trials."""
     records: list[dict[str, Any]] = []
     for trial_row, trial in table.groupby("trial_row", sort=True):
         scores = _score_subset(trial)
@@ -245,7 +245,7 @@ def trial_distribution(trials: pd.DataFrame) -> dict[str, dict[str, dict[str, fl
 
 
 def overall_metrics(table: pd.DataFrame) -> dict[str, Any]:
-    """Rescore the saved table exactly as the held-out summary reports it."""
+    """Calculate overall metrics from the saved held-out predictions."""
     truth = _truth(table)
     predictions = _predictions(table)
     scored = {
@@ -268,7 +268,7 @@ def overall_metrics(table: pd.DataFrame) -> dict[str, Any]:
 def input_checks(
     table: pd.DataFrame, held_out: Mapping[str, Any], predictions_sha256: str
 ) -> list[dict[str, object]]:
-    """Confirm the inputs are the frozen held-out outputs and reproduce their scores."""
+    """Check that the saved predictions and summary agree."""
     samples = held_out["samples"]
     checks = [
         _check(
@@ -336,7 +336,7 @@ def run_analysis(
     figures_dir: Path,
     checks: Sequence[Mapping[str, object]],
 ) -> dict[str, Any]:
-    """Compute the trial and error-pattern results, then write the table, figures, and summary."""
+    """Calculate error patterns and write the table, figures, and summary."""
     trials = trial_metrics(table)
     selected = select_trials(trials)
     by_speed = speed_summary(table)
@@ -704,7 +704,7 @@ def _metric(entry: Mapping[str, Any], key: str, group: str) -> float | None:
 
 
 def _reduce(entries: Sequence[Any], reducer: Callable[[np.ndarray], float]) -> Any:
-    """Reduce matching nested metric dictionaries field by field, keeping undefined ones."""
+    """Reduce matching metric fields while preserving undefined values."""
     first = entries[0]
     if isinstance(first, Mapping):
         return {

@@ -225,8 +225,6 @@
     "validation_predictions": "results/baselines/validation_predictions.csv",
     "constant_baseline_model": "results/baselines/constant_baseline.json",
     "ridge_decoder_model": "results/baselines/ridge_decoder.json",
-    "baseline_metrics": "results/baseline_metrics.json",
-    "summary_json": "results/baseline_summary.json",
-    "summary_markdown": "results/baseline_summary.md"
+    "summary_json": "results/baseline_summary.json"
   }
 }

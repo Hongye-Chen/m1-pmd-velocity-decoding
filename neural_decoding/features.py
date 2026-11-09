@@ -6,17 +6,6 @@ One sample pairs a neural reference time ``t`` with a later cursor measurement:
   so bin 0 is the oldest and a spike falling exactly on ``t`` belongs to no bin;
 - the target is the stored cursor velocity at ``t + lag``, never before it;
 - both the history and the target lie inside one trial.
-
-Target eligibility is anchored on the largest candidate lag rather than on each
-lag's own, so every candidate predicts an identical set of targets and a lag can
-only change the neural window, never the samples being scored.
-
-Times are held in integer milliseconds and windows are positioned by counting whole
-samples on the behavior grid. Comparing derived times against stored timestamps
-instead makes bin membership ambiguous and drops valid samples to rounding.
-
-Normalization may only be fitted on training data, including the whole-trial subsets
-used as cross-validation folds.
 """
 
 from __future__ import annotations

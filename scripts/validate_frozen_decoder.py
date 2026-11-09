@@ -1,12 +1,8 @@
-"""Fit and run the one authorized validation of the frozen PVA/50/50 decoder.
+"""Fit the selected PVA Kalman decoder and evaluate it on validation trials.
 
-Run training-only checks first::
+Run input checks with::
 
     python -m scripts.validate_frozen_decoder --preflight
-
-After explicit authorization, omit ``--preflight``.  The official mode creates
-its output directory exactly once and refuses to run if that directory already
-exists.  Held-out trial bounds are never constructed or filtered.
 """
 
 from __future__ import annotations
@@ -67,7 +63,7 @@ _OUTPUT_DIRECTORY = Path("results/internal/kalman_validation")
 
 @dataclass(frozen=True)
 class VerifiedInputs:
-    """Frozen inputs and their validated provenance."""
+    """Validated training, validation, and selection inputs."""
 
     session: SessionData
     training_bounds: dict[int, TrialBounds]
@@ -566,7 +562,7 @@ def _validation_trial_ids(
     session: SessionData,
     bounds: Mapping[int, TrialBounds],
 ) -> dict[int, int]:
-    """Map only the declared validation rows to their frozen NWB trial IDs."""
+    """Map validation rows to their NWB trial IDs."""
     table = session.trials.set_index("trial_row")
     mapping = {
         int(row): int(table.at[int(row), "trial_id"])

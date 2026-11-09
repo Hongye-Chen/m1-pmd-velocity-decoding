@@ -1,12 +1,9 @@
-"""Jointly select the clean-room causal decoder from eligible training trials.
+"""Select the causal Kalman decoder configuration from training trials.
 
 Run from the repository root with the project environment active::
 
     python -m scripts.select_joint_decoder
 
-The command evaluates the frozen 36-candidate grid in the tracked five folds,
-repeats the complete in-memory workflow to prove deterministic reproduction, and
-persists only the approved compact selection artifacts.
 """
 
 from __future__ import annotations

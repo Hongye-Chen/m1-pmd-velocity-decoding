@@ -1,8 +1,4 @@
 """Shared metrics for two-dimensional cursor velocity decoding.
-
-Every metric is computed per axis and only then averaged, so a decoder that tracks
-one axis well and the other poorly cannot hide behind a pooled score. Correlation is
-undefined, not zero, for a prediction without variance.
 """
 
 from __future__ import annotations

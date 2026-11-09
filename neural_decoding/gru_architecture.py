@@ -1,8 +1,4 @@
 """Grid search over GRU depth, hidden size, dropout, and learning rate.
-
-All other settings come from the input-representation search. The baseline
-configuration was already trained there, so its runs are reused instead of
-trained again.
 """
 
 from __future__ import annotations

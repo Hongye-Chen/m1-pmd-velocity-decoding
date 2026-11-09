@@ -5,6 +5,9 @@ spiking activity in one public recording session. The implemented models use onl
 causal neural inputs and preserve complete trials throughout selection and
 evaluation.
 
+Full methods, model selection, evaluation details, and limitations are documented
+in the [technical report](TECHNICAL_REPORT.md).
+
 ## Held-out results
 
 The four decoders were evaluated on 10,215 samples from 29 held-out trials. GRU
@@ -18,17 +21,23 @@ values are the arithmetic mean across three independently trained models.
 | GRU, three-seed mean | 0.705882, 0.696905 | **0.701393** | 0.838 | 3.875 |
 
 The constant model predicts the mean training velocity and uses no neural data.
-Constant and Ridge artifacts are under
-[`results/baselines/`](results/baselines/), with validation metrics in
-[`results/baseline_summary.json`](results/baseline_summary.json). Kalman results
-and models are under
-[`results/kalman_decoder_selection/`](results/kalman_decoder_selection/) and
-[`results/kalman_validation/`](results/kalman_validation/). GRU results and
-trained models are under
-[`results/gru_input_selection/`](results/gru_input_selection/) and
-[`results/gru_architecture_selection/`](results/gru_architecture_selection/).
-Held-out metrics and predictions are under
-[`results/held_out_evaluation/`](results/held_out_evaluation/).
+
+### Example trials
+
+Three trials representing low, median, and high error were selected by
+across-model RMSE.
+
+Low-error trial:
+
+![Low-error trial velocity and trajectory](reports/figures/held_out_lowest_error_trial.png)
+
+Median-error trial:
+
+![Median-error trial velocity and trajectory](reports/figures/held_out_median_trial.png)
+
+High-error trial:
+
+![High-error trial velocity and trajectory](reports/figures/held_out_highest_error_trial.png)
 
 ### Error analysis
 
@@ -38,16 +47,9 @@ decoders in every speed quartile and movement-direction sector. The constant
 baseline had the lowest RMSE in the two slowest quartiles, while GRU led in the
 two faster quartiles.
 
-![Trial-level held-out RMSE](reports/figures/held_out_trial_rmse.png)
-
 ![Held-out error by speed and direction](reports/figures/held_out_error_by_speed_direction.png)
 
-Velocity traces and integrated relative trajectories are shown for objectively
-selected [low-error](reports/figures/held_out_lowest_error_trial.png),
-[median-error](reports/figures/held_out_median_trial.png), and
-[high-error](reports/figures/held_out_highest_error_trial.png) trials. Trial
-metrics and the complete analysis summary are available in
-[`results/held_out_analysis/`](results/held_out_analysis/).
+![Trial-level held-out RMSE](reports/figures/held_out_trial_rmse.png)
 
 ## Data
 
@@ -89,7 +91,43 @@ $env:NEURAL_DECODING_NWB_FILE = "D:/path/to/sub-T_ses-RT-20130906_behavior+eceph
 CPU execution is sufficient for the classical decoders and GRU inference. A CUDA
 GPU is recommended for GRU training and configuration selection.
 
+## Using the trained models
+
+The final model artifacts are included in the repository:
+
+- Ridge: [`results/baselines/ridge_decoder.json`](results/baselines/ridge_decoder.json)
+- Kalman: [`results/kalman_validation/model.json`](results/kalman_validation/model.json)
+  with its saved
+  [`configuration.json`](results/kalman_validation/configuration.json)
+- GRU: the three `checkpoint_seed*.pt` files and
+  [`final_configuration.json`](results/gru_architecture_selection/final_configuration.json)
+  under
+  [`results/gru_architecture_selection/`](results/gru_architecture_selection/)
+
+Ridge and GRU use four chronological 50 ms spike-count bins from all 53 units,
+covering `[t - 250 ms, t - 50 ms)` for a velocity target at time `t`. Ridge
+flattens the bins; GRU keeps their sequence order. Kalman maintains its recursive
+PVA state and receives fresh non-overlapping 50 ms counts at the selected 50 ms
+lag.
+
+[`scripts/verify_replay_latency.py`](scripts/verify_replay_latency.py) provides a
+complete example of loading the saved artifacts and producing timestamp-ordered
+predictions.
+
+Supporting selection and validation results are available in
+[`results/baseline_summary.json`](results/baseline_summary.json),
+[`results/kalman_decoder_selection/`](results/kalman_decoder_selection/),
+[`results/kalman_validation/`](results/kalman_validation/),
+[`results/gru_input_selection/`](results/gru_input_selection/), and
+[`results/gru_architecture_selection/`](results/gru_architecture_selection/).
+Final held-out predictions and analyses are under
+[`results/held_out_evaluation/`](results/held_out_evaluation/) and
+[`results/held_out_analysis/`](results/held_out_analysis/).
+
 ## Methods
+
+Grouped training folds selected the Ridge and Kalman configurations. Validation
+performance selected the GRU configuration and controlled early stopping.
 
 ### Ridge
 

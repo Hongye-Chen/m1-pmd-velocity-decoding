@@ -1,15 +1,9 @@
-"""Build and validate causal training features for every candidate lag.
+"""Build and validate causal neural features for each candidate lag.
 
 Run from the repository root with the project environment active::
 
     python -m scripts.build_features
     python -m scripts.build_features --lags 0 100 200
-
-The command builds training samples for each candidate neural-to-target lag over one
-shared set of target samples, fits full-training normalization per lag, writes the
-arrays and per-sample manifests, and validates the result. Lag selection happens
-later using training-only cross-validation, so no validation or held-out artifact is
-produced here.
 
 Exit codes: 0 when every check passes, 1 when a check fails, and 2 when the
 recording is not configured or cannot be identified.
@@ -55,7 +49,7 @@ _GRID_TOLERANCE_S = 1e-6
 
 @dataclass(frozen=True)
 class Check:
-    """One runtime-validation check against the produced features."""
+    """Result of one feature validation check."""
 
     name: str
     passed: bool
@@ -70,7 +64,7 @@ def run_checks(
     manifests: dict[int, pd.DataFrame],
     artifact_dir: Path,
 ) -> list[Check]:
-    """Validate the produced training features against the causal protocol."""
+    """Validate the training features and target alignment."""
     checks: list[Check] = []
     trials = session.trials.set_index("trial_row")
     n_units = len(session.units)
@@ -277,7 +271,7 @@ def build_summary(
     artifacts: dict[str, str],
     hashes: dict[str, str],
 ) -> dict[str, object]:
-    """Assemble the machine-readable feature-validation summary."""
+    """Build the feature-validation summary."""
     lags = sorted(feature_sets)
     reference_set = feature_sets[lags[0]]
     return {
@@ -344,75 +338,6 @@ def build_summary(
         "all_checks_passed": all(check.passed for check in checks),
         "artifacts": artifacts,
     }
-
-
-def render_markdown(summary: dict[str, object]) -> str:
-    """Render the concise human-readable feature-validation summary."""
-    protocol = summary["protocol"]
-    shared = summary["shared_targets"]
-    lags = summary["lags"]
-
-    lines = [
-        "# Feature validation summary",
-        "",
-        "## Causal protocol",
-        "",
-        f"- History: {protocol['history_window']}",
-        f"- Bins: {protocol['n_bins']} x {protocol['bin_ms']} ms, offsets "
-        f"{protocol['bin_offsets_s']} s",
-        f"- Prediction cadence: {protocol['cadence_ms']} ms",
-        f"- Target: {protocol['target']}",
-        f"- Candidate lags: {protocol['candidate_lags_ms']} ms",
-        f"- Eligibility anchored on {protocol['eligibility_lag_ms']} ms. "
-        f"{protocol['eligibility_rule']}",
-        f"- Array layout: {protocol['counts_shape']}, flattened {protocol['flattened_layout']}",
-        "",
-        "## Shared target samples",
-        "",
-        f"- Split built: `{summary['split_built']}`",
-        f"- {shared['samples']} target samples across {shared['trials']} trials",
-        f"- Target times span {shared['target_time_s'][0]:.3f} to "
-        f"{shared['target_time_s'][1]:.3f} s",
-        "",
-        "Every candidate lag is scored on these same samples in the same order; only "
-        "the neural window moves.",
-        "",
-        "## Per-lag features",
-        "",
-        "| Lag (ms) | Samples | Feature columns | Mean spikes per sample | "
-        "Normalization fitted on |",
-        "| --- | --- | --- | --- | --- |",
-    ]
-    for lag, info in lags.items():
-        lines.append(
-            f"| {lag} | {info['samples']} | {info['feature_columns']} | "
-            f"{info['spikes_per_sample_mean']:.2f} | `{info['normalization_fitted_on']}` |"
-        )
-
-    lines += [
-        "",
-        f"Validation features: {summary['not_built']['validation']}",
-        f"Held-out features: {summary['not_built']['held_out']}",
-        "",
-        "## Checks",
-        "",
-        "| Check | Result | Detail |",
-        "| --- | --- | --- |",
-    ]
-    for check in summary["checks"]:
-        lines.append(
-            f"| {check['name']} | {'pass' if check['passed'] else 'FAIL'} | {check['detail']} |"
-        )
-
-    lines += [
-        "",
-        f"Overall: {'all checks passed' if summary['all_checks_passed'] else 'FAILURES PRESENT'}.",
-        "",
-        "## Artifacts",
-        "",
-    ]
-    lines += [f"- `{path}`" for path in summary["artifacts"].values()]
-    return "\n".join(lines) + "\n"
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -491,35 +416,15 @@ def main(argv: list[str] | None = None) -> int:
         hashes[f"{stem}_targets"] = _array_hash(features.targets)
         logger.info("Wrote %s training samples for lag %s ms", features.n_samples, lag)
 
-    normalization_path = results_dir / "feature_normalization.json"
-    normalization_path.write_text(
-        json.dumps(
-            {
-                "fitted_on": BUILT_SPLIT,
-                "scope": "complete training split, for official model fitting",
-                "by_lag_ms": {
-                    str(lag): normalizations[lag].as_dict() for lag in sorted(normalizations)
-                },
-            },
-            indent=2,
-        )
-        + "\n",
-        encoding="utf-8",
-    )
-    artifacts["normalization"] = _repo_relative(normalization_path)
-
     checks = run_checks(session, spec, feature_sets, normalizations, manifests, artifact_dir)
 
     summary_path = results_dir / "feature_validation.json"
-    report_path = results_dir / "feature_validation.md"
     artifacts["summary_json"] = _repo_relative(summary_path)
-    artifacts["summary_markdown"] = _repo_relative(report_path)
 
     summary = build_summary(
         session, spec, feature_sets, normalizations, checks, artifacts, hashes
     )
     summary_path.write_text(json.dumps(summary, indent=2) + "\n", encoding="utf-8")
-    report_path.write_text(render_markdown(summary), encoding="utf-8")
 
     _print_report(feature_sets, checks, artifacts)
     failures = [check for check in checks if not check.passed]

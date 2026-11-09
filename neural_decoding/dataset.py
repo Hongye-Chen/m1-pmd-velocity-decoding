@@ -1,9 +1,4 @@
 """Loading of the selected DANDI 000688 recording session.
-
-Only the recording named in the frozen dataset decision is accepted, and its size
-and SHA-256 are verified before any data is read. Spike times are trimmed to the
-interval covered by both the neural and behavioral recordings, since spikes outside
-it have no cursor measurement to align against.
 """
 
 from __future__ import annotations

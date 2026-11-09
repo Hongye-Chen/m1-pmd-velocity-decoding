@@ -1,16 +1,4 @@
 """Training-only grouped cross-validation for lag and Ridge-alpha selection.
-
-The one shared neural-to-target lag used by every later decoder is chosen here from
-eligible training trials only, so validation and held-out data stay untouched.
-
-Three properties are enforced rather than assumed: trials are grouped into
-contiguous folds and never split, since samples 10 ms apart inside one reach are
-near-duplicates; normalization is fitted per fold-training set and applied unchanged
-to that fold's assessment trials; and every candidate lag is scored on the same
-target samples.
-
-The Ridge models fitted here are temporary selection instruments and are discarded.
-The official models are fitted later on the complete training set.
 """
 
 from __future__ import annotations

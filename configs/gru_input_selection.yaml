@@ -1,28 +1,17 @@
 # Frozen GRU input-representation selection protocol.
-#
-# Written before any GRU was trained. Validation is the development set for early
-# stopping and selection; the held-out split is never built. Every run records this
-# file's SHA-256, so it must not change once validation metrics exist.
 
 timing:
-  # For a target at time t, every representation covers [t - lag - history, t - lag)
-  # in chronological half-open bins of one width. The lag is fixed, not searched.
   interval_end_lag_ms: 50
   cadence_ms: 10
   histories_ms: [100, 200]
   bin_widths_ms: [10, 20, 50]
 
 targets:
-  # The exact official baseline target identities, shared by every run. Both
-  # histories fit inside the baseline's 200 ms eligibility rule, so no sample is
-  # removed or padded.
   eligibility_history_ms: 200
   training_samples: 43022
   validation_samples: 8183
 
 architecture:
-  # One GRU layer, a linear two-output velocity head, PyTorch's seeded default
-  # initialization, and a zero hidden state for every independent sample.
   num_layers: 1
   hidden_size: 64
   dropout: 0.0
@@ -34,34 +23,24 @@ optimization:
   epsilon: 1.0e-8
   weight_decay: 1.0e-4
   scheduler: none
-  # Mean squared error in normalized velocity coordinates.
   loss: mse
   batch_size: 256
   max_epochs: 150
   early_stopping_patience: 15
   early_stopping_min_delta: 1.0e-5
   gradient_clip_norm: 1.0
-  # Training samples are shuffled by the run's seeded generator; validation is not.
   data_loader_workers: 0
 
 seeds: [0, 1, 2]
 
 normalization:
-  # Counts: one mean and population standard deviation per unit over every training
-  # sequence element, shared across positions. Targets: per-axis mean and population
-  # standard deviation over the complete training targets. A unit whose scale falls
-  # below the floor keeps scale 1.
   std_floor: 1.0e-8
 
 device:
-  # CUDA when available, otherwise CPU, chosen once for every run.
   deterministic_algorithms: true
   cudnn_benchmark: false
   allow_tf32: false
   cublas_workspace_config: ":4096:8"
 
 selection:
-  # Rank each representation by the arithmetic mean of its seed-level mean R2.
-  # Within the tolerance of the best, prefer the lower sample standard deviation
-  # (ddof=1) of those seed scores, then the shorter history, then the larger width.
   tie_tolerance: 1.0e-6

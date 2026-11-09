@@ -4,12 +4,6 @@ Run from the repository root with the project environment active::
 
     python -m scripts.select_lag_alpha
 
-The command builds training features for every candidate lag over one shared target
-set, scores each lag and alpha with trial-grouped cross-validation, applies the
-frozen tie-breaking rules, and writes the selected configuration together with the
-full results. Validation and held-out trials are never read, and the temporary Ridge
-models fitted here are discarded: the official models are fitted in a later step.
-
 Exit codes: 0 when every check passes, 1 when a check fails, and 2 when the
 recording is not configured or cannot be identified.
 """
@@ -53,7 +47,7 @@ SELECTION_SPLIT = TRAIN
 
 @dataclass(frozen=True)
 class Check:
-    """One runtime-validation check against the selection run."""
+    """Result of one selection validation check."""
 
     name: str
     passed: bool
@@ -68,7 +62,7 @@ def run_checks(
     lags: tuple[int, ...],
     alphas: tuple[float, ...],
 ) -> list[Check]:
-    """Validate that the selection used training data only and followed the rules."""
+    """Validate the training-only selection and its candidate results."""
     checks: list[Check] = []
     trials = session.trials
     eligible_training = set(
@@ -233,9 +227,8 @@ def build_summary(
     checks: list[Check],
     artifacts: dict[str, str],
 ) -> dict[str, object]:
-    """Assemble the machine-readable selection summary."""
+    """Build the selection summary."""
     reference = feature_sets[lags[0]]
-    ranked = sorted(report.candidates, key=lambda c: (-c.r2_mean, c.lag_ms, -c.alpha))
     return {
         "recording": {"name": session.identity.name, "sha256": session.identity.sha256},
         "procedure": {
@@ -273,16 +266,6 @@ def build_summary(
             "fold_r2_means": list(selected.fold_r2_means),
             "fold_r2_spread": selected.fold_r2_spread,
         },
-        "ranking": [
-            {
-                "rank": position + 1,
-                "lag_ms": candidate.lag_ms,
-                "ridge_alpha": candidate.alpha,
-                "out_of_fold_r2_mean": candidate.r2_mean,
-                "fold_r2_spread": candidate.fold_r2_spread,
-            }
-            for position, candidate in enumerate(ranked)
-        ],
         "best_per_lag": {
             str(lag): max(c.r2_mean for c in report.candidates if c.lag_ms == lag)
             for lag in lags
@@ -298,83 +281,6 @@ def build_summary(
         "all_checks_passed": all(check.passed for check in checks),
         "artifacts": artifacts,
     }
-
-
-def render_markdown(summary: dict[str, object]) -> str:
-    """Render the concise human-readable selection summary."""
-    procedure = summary["procedure"]
-    samples = summary["samples"]
-    selected = summary["selected"]
-
-    lines = [
-        "# Lag and Ridge alpha selection",
-        "",
-        "## Selected configuration",
-        "",
-        f"- Lag: **{selected['lag_ms']} ms**",
-        f"- Ridge alpha: **{selected['ridge_alpha']:g}**",
-        f"- Out-of-fold mean R2: {selected['out_of_fold_r2_mean']:.6f} "
-        f"(horizontal {selected['out_of_fold_r2_x']:.6f}, "
-        f"vertical {selected['out_of_fold_r2_y']:.6f})",
-        f"- Per-fold mean R2: "
-        + ", ".join(f"{value:.4f}" for value in selected["fold_r2_means"])
-        + f" (spread {selected['fold_r2_spread']:.4f})",
-        "",
-        "## Procedure",
-        "",
-        f"- Split used: `{procedure['split_used']}` only. Validation and held-out "
-        "trials were not read.",
-        f"- {samples['training_trials']} eligible training trials in "
-        f"{procedure['n_groups']} contiguous groups; {procedure['grouping']}.",
-        f"- {samples['shared_target_samples']} shared target samples, "
-        f"{samples['feature_columns']} feature columns.",
-        f"- Lag grid: {procedure['lag_grid_ms']} ms. Alpha grid: {procedure['alpha_grid']}.",
-        f"- Normalization {procedure['normalization']}.",
-        f"- Selection metric: {procedure['metric']}.",
-        f"- Models: {procedure['models']}.",
-        "",
-        "## Best alpha per lag",
-        "",
-        "| Lag (ms) | Best out-of-fold mean R2 |",
-        "| --- | --- |",
-    ]
-    for lag, score in summary["best_per_lag"].items():
-        lines.append(f"| {lag} | {score:.6f} |")
-
-    lines += [
-        "",
-        "## Ranking",
-        "",
-        "| Rank | Lag (ms) | Alpha | Out-of-fold mean R2 | Fold spread |",
-        "| --- | --- | --- | --- | --- |",
-    ]
-    for entry in summary["ranking"]:
-        lines.append(
-            f"| {entry['rank']} | {entry['lag_ms']} | {entry['ridge_alpha']:g} | "
-            f"{entry['out_of_fold_r2_mean']:.6f} | {entry['fold_r2_spread']:.4f} |"
-        )
-
-    lines += [
-        "",
-        "## Checks",
-        "",
-        "| Check | Result | Detail |",
-        "| --- | --- | --- |",
-    ]
-    for check in summary["checks"]:
-        lines.append(
-            f"| {check['name']} | {'pass' if check['passed'] else 'FAIL'} | {check['detail']} |"
-        )
-
-    lines += [
-        "",
-        f"Overall: {'all checks passed' if summary['all_checks_passed'] else 'FAILURES PRESENT'}.",
-        "",
-        "## Artifacts",
-        "",
-    ]
-    lines += [f"- `{path}`" for path in summary["artifacts"].values()]
-    return "\n".join(lines) + "\n"
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -437,8 +343,6 @@ def main(argv: list[str] | None = None) -> int:
     paths = {
         "fold_assignments": selection_dir / "fold_assignments.csv",
         "cv_results": selection_dir / "cv_results.csv",
-        "fold_metrics": selection_dir / "fold_metrics.csv",
-        "fold_normalization": selection_dir / "fold_normalization.csv",
     }
     fold_assignments.to_csv(paths["fold_assignments"], index=False)
 
@@ -462,64 +366,15 @@ def main(argv: list[str] | None = None) -> int:
     ).sort_values(["lag_ms", "ridge_alpha"])
     cv_results.to_csv(paths["cv_results"], index=False)
 
-    fold_metrics = pd.DataFrame(
-        [
-            {
-                "lag_ms": result.lag_ms,
-                "ridge_alpha": result.alpha,
-                "fold_index": result.fold_index,
-                "n_samples": result.n_samples,
-                "r2_x": result.r2_x,
-                "r2_y": result.r2_y,
-                "r2_mean": result.r2_mean,
-            }
-            for result in report.fold_results
-        ]
-    ).sort_values(["lag_ms", "ridge_alpha", "fold_index"])
-    fold_metrics.to_csv(paths["fold_metrics"], index=False)
-
-    fold_normalization = pd.DataFrame(
-        [
-            {
-                "lag_ms": record.lag_ms,
-                "fold_index": record.fold_index,
-                "fitted_on": record.fitted_on,
-                "n_training_trials": len(record.training_rows),
-                "n_training_samples": record.n_samples,
-                "n_assessment_trials": len(record.assessment_rows),
-                "overlap_with_assessment": len(
-                    set(record.training_rows) & set(record.assessment_rows)
-                ),
-            }
-            for record in report.normalizations
-        ]
-    ).sort_values(["lag_ms", "fold_index"])
-    fold_normalization.to_csv(paths["fold_normalization"], index=False)
-
     for name, path in paths.items():
         artifacts[name] = _repo_relative(path)
-
-    predictions_path = selection_dir / "out_of_fold_predictions.npz"
-    np.savez_compressed(
-        predictions_path,
-        target_index=feature_sets[lags[0]].target_index,
-        trial_row=feature_sets[lags[0]].trial_row,
-        targets=feature_sets[lags[0]].targets,
-        **{
-            f"lag{candidate.lag_ms:03d}ms_alpha{candidate.alpha:g}": candidate.predictions
-            for candidate in report.candidates
-        },
-    )
-    artifacts["out_of_fold_predictions"] = _repo_relative(predictions_path)
 
     checks = run_checks(session, feature_sets, report, selected, lags, alphas)
 
     configuration_path = results_dir / "selected_configuration.json"
     summary_path = results_dir / "selection_summary.json"
-    report_path = results_dir / "selection_summary.md"
     artifacts["selected_configuration"] = _repo_relative(configuration_path)
     artifacts["summary_json"] = _repo_relative(summary_path)
-    artifacts["summary_markdown"] = _repo_relative(report_path)
 
     summary = build_summary(
         session, spec, feature_sets, report, selected, lags, alphas, checks, artifacts
@@ -547,7 +402,6 @@ def main(argv: list[str] | None = None) -> int:
         encoding="utf-8",
     )
     summary_path.write_text(json.dumps(summary, indent=2) + "\n", encoding="utf-8")
-    report_path.write_text(render_markdown(summary), encoding="utf-8")
 
     _print_report(report, selected, checks, artifacts)
     failures = [check for check in checks if not check.passed]

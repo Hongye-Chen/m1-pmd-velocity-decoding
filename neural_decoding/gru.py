@@ -1,9 +1,4 @@
 """GRU velocity decoder, training loop, and checkpoint helpers.
-
-Each sample is decoded on its own: the hidden state starts at zero and is not
-carried over between samples. A linear head maps the last hidden state to
-(vx, vy) in normalized units. Training uses PyTorch's deterministic algorithms,
-so a run is reproducible on the same device and library versions.
 """
 
 from __future__ import annotations

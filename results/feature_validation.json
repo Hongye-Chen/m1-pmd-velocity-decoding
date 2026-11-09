@@ -448,8 +448,6 @@
     "train_lag150ms_manifest": "results/features/samples_train_lag150ms.csv",
     "train_lag200ms_arrays": "results/features/train_lag200ms.npz",
     "train_lag200ms_manifest": "results/features/samples_train_lag200ms.csv",
-    "normalization": "results/feature_normalization.json",
-    "summary_json": "results/feature_validation.json",
-    "summary_markdown": "results/feature_validation.md"
+    "summary_json": "results/feature_validation.json"
   }
 }

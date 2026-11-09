@@ -4,14 +4,6 @@ Usage, from the repository root::
 
     python -m scripts.select_gru_input
 
-Trains the baseline GRU (hidden size 64, learning rate 0.001) with each seed on
-every history/bin-width pair in ``configs/gru_input_selection.yaml``. Validation
-loss drives early stopping, and the pair with the best mean R2 across seeds is
-selected. The test split is not used.
-
-Output goes to ``results/internal/gru_input_selection/``; the script will not
-overwrite an existing directory. Only the selected pair's checkpoints are kept.
-
 Exit codes: 0 if all checks pass, 1 if a check or run fails, 2 if the recording
 or an input file is missing.
 """
@@ -76,7 +68,7 @@ _PROGRESS_EVERY = 10
 
 @dataclass(frozen=True)
 class TargetEvidence:
-    """Official baseline target identities, verified before any training."""
+    """Baseline target identities and rebuilt feature sets."""
 
     training: FeatureSet
     validation: FeatureSet
@@ -198,7 +190,7 @@ def main(argv: list[str] | None = None) -> int:
 
 
 def _verify_targets(root: Path, session: SessionData, protocol: GruProtocol) -> TargetEvidence:
-    """Rebuild the official baseline targets and prove they match the frozen records."""
+    """Rebuild the baseline targets and compare them with the saved results."""
     paths = {
         "baseline_summary": root / _BASELINE_SUMMARY,
         "baseline_validation_predictions": root / _BASELINE_PREDICTIONS,
@@ -401,7 +393,7 @@ def _progress_logger(started: float):
 def _determinism_probe(
     train_x: torch.Tensor, train_y: torch.Tensor, protocol: GruProtocol
 ) -> bool:
-    """Replay a short training-only run twice and require bitwise-identical weights."""
+    """Repeat a short training run and compare the resulting weights."""
     probe = replace(protocol, max_epochs=2)
     subset_x, subset_y = train_x[:_PROBE_SAMPLES], train_y[:_PROBE_SAMPLES]
     reference = subset_y.double().cpu().numpy()
@@ -575,7 +567,7 @@ def _write_selected(
     protocol_sha256: str,
     device_info: DeviceInfo,
 ) -> dict[str, Any]:
-    """Persist the selected representation's runs and verify them from disk."""
+    """Save the selected representation's runs and verify the files."""
     selected = sorted(
         (run for run in runs if run.representation == representation),
         key=lambda run: run.result.seed,

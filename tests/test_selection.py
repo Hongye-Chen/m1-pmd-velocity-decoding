@@ -1,11 +1,4 @@
-"""Synthetic tests for lag and alpha selection.
-
-Each failure guarded here would produce a plausible winner rather than an error: a
-fold that splits a trial leaves near-duplicates on both sides of the boundary, a
-fold standardized with its own statistics scores better than it should, and
-tie-breaking that ignores its stated order picks a different model. The metric
-functions are covered in ``test_metrics.py``.
-"""
+"""Tests for lag and Ridge alpha selection."""
 
 from __future__ import annotations
 

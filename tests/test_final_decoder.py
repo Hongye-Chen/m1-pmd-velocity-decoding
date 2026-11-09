@@ -1,4 +1,4 @@
-"""Synthetic final-fit, isolation, and serialization tests for CA-06C."""
+"""Tests for Kalman fitting, validation filtering, and serialization."""
 
 from __future__ import annotations
 

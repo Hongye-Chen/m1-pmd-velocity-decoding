@@ -1,10 +1,4 @@
-"""Synthetic tests for trial split assignment and the frozen eligibility rules.
-
-A defect here would move held-out trials into training or silently change which
-trials are modelled, and neither failure would raise or look wrong in a metric.
-The inputs are small hand-built tables so the expected outcome of every rule is
-known independently of the recording.
-"""
+"""Tests for trial eligibility and split assignment."""
 
 from __future__ import annotations
 
@@ -34,7 +28,7 @@ def _trial(
     start: float = 100.0,
     stop: float = 110.0,
 ) -> dict[str, object]:
-    """One synthetic trial that is eligible unless an argument breaks a rule."""
+    """Build a synthetic trial with valid defaults."""
     return {
         "trial_row": row,
         "start_time": start,

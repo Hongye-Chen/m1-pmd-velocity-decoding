@@ -1,4 +1,4 @@
-"""Synthetic tests for the GRU architecture and learning-rate search."""
+"""Tests for GRU architecture and learning-rate selection."""
 
 from __future__ import annotations
 

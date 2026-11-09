@@ -1,10 +1,4 @@
-"""Synthetic tests for the project metrics.
-
-Every score is checked against a value computed by hand, because a mis-aggregated
-metric never raises: it returns a plausible number that the whole project is then
-reported against. Axes are given deliberately unequal variance so that averaging
-the per-axis scores cannot agree with pooling them by accident.
-"""
+"""Tests for decoding metrics and axis aggregation."""
 
 from __future__ import annotations
 

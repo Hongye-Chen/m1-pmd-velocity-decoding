@@ -1,12 +1,4 @@
 """Binned spike-count sequences for the GRU decoder.
-
-For a target at time ``t``, the input covers ``[t - lag - history, t - lag)`` in
-equal-width bins, oldest bin first. The window has to stay inside the target's
-trial. Samples are taken from the baseline feature set, so every bin setting is
-scored on the same targets.
-
-Counts are normalized per unit, with one mean and scale shared by all bins, and
-the statistics come from the training split only.
 """
 
 from __future__ import annotations

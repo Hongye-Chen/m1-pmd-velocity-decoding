@@ -1,11 +1,11 @@
-"""Replay the validation targets incrementally and time each frozen decoder.
+"""Replay validation data incrementally and measure decoder latency.
 
 Run from the repository root with the project environment active::
 
     python -m scripts.verify_replay_latency
 
 Exit codes: 0 when every check passes, 1 when a check or the replay fails, and 2
-when the recording or a frozen artifact is unavailable.
+when the recording or a model artifact is unavailable.
 """
 
 from __future__ import annotations
@@ -184,7 +184,7 @@ class ReplayStep(NamedTuple):
 
 @dataclass(frozen=True)
 class BatchReferences:
-    """The official validation targets and every model's batch predictions."""
+    """Validation targets and batch predictions used as replay references."""
 
     bounds: dict[int, TrialBounds]
     trial_starts: dict[int, float]
@@ -200,7 +200,7 @@ class BatchReferences:
 
 
 def build_references(root: Path, prepared: PreparedEvaluation) -> BatchReferences:
-    """Rebuild the official validation targets and batch predictions in memory."""
+    """Build validation targets and batch predictions for comparison."""
     session, models = prepared.session, prepared.models
     timestamps = session.behavior_timestamps
     trials = session.trials
@@ -355,10 +355,7 @@ def replay_kalman_schedule(
 
 @contextmanager
 def instrumented_filter(log: list[tuple[str, int, np.ndarray | None]], *, capture_updates: bool):
-    """Record the end of every filter step and, optionally, every count vector it updates on.
-
-    The official filter runs unchanged; two of its internal calls are wrapped.
-    """
+    """Record Kalman filter step times and, optionally, observation counts."""
     original_velocity = joint_decoder._physical_velocity
     original_normalize = ObservationModel.normalize_counts
 
@@ -411,7 +408,7 @@ def verify_kalman(
     initial_positions: Mapping[int, np.ndarray],
     timestamps: np.ndarray,
 ) -> dict[str, Any]:
-    """Instrument the official filter on the replayed intervals and check every step."""
+    """Run and inspect the Kalman filter on replayed observations."""
     process = model.process
     transition, offset, noise = (
         process.transition,
@@ -560,7 +557,7 @@ def gru_output(
 def run_replay(
     prepared: PreparedEvaluation, references: BatchReferences
 ) -> tuple[list[dict[str, object]], dict[str, Any], dict[str, Any]]:
-    """Replay every model against its batch reference and return checks and details."""
+    """Replay each model and compare its output with the batch prediction."""
     session, models = prepared.session, prepared.models
     timestamps = session.behavior_timestamps
     features = references.features
@@ -734,7 +731,7 @@ def run_replay(
 def reference_checks(
     root: Path, prepared: PreparedEvaluation, references: BatchReferences
 ) -> list[dict[str, object]]:
-    """Confirm the targets and batch predictions are the recorded official ones."""
+    """Check that replay references match the saved validation results."""
     features, identity = references.features, references.identity
     recorded_identity = _read_json(root / KALMAN_CONFIGURATION)["final_fit"][
         "validation_identity_sha256"
@@ -807,7 +804,7 @@ def reference_checks(
 def measure_latency(
     prepared: PreparedEvaluation, references: BatchReferences, context: Mapping[str, Any]
 ) -> dict[str, Any]:
-    """Time preprocessing and inference per target for every model, after the checks."""
+    """Measure preprocessing and inference time per target for each model."""
     session, models = prepared.session, prepared.models
     timestamps = session.behavior_timestamps
     stream, offsets = context["stream"], context["offsets"]

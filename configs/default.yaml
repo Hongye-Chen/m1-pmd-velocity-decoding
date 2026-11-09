@@ -1,14 +1,6 @@
-# Default project configuration.
-#
-# This file is tracked and must stay free of machine-specific values. Put local
-# paths in configs/local.yaml, which is untracked. See README.md.
-
 paths:
-  # Absolute path to the session NWB recording, which lives outside the repository.
-  # Provide it through configs/local.yaml or NEURAL_DECODING_NWB_FILE.
   nwb_file: null
 
-  # Output locations, resolved relative to the repository root when not absolute.
   results_dir: results
   reports_dir: reports
   log_dir: logs
@@ -23,7 +15,4 @@ features:
   n_bins: 4
   cadence_ms: 10
 
-  # Neural-to-target lags compared during selection. Target eligibility uses the
-  # largest of these, so every candidate is scored on identical target samples.
-  # The single selected lag is chosen later by training-only cross-validation.
   candidate_lags_ms: [0, 50, 100, 150, 200]

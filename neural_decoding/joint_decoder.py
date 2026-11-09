@@ -1,9 +1,4 @@
-"""Clean-room primitives for joint causal decoder selection.
-
-This module implements the approved Step 6R state, observation, scheduling, and
-recursive-filtering rules.  It intentionally does not depend on any earlier
-Kalman implementation.  Selection orchestration and artifact writing live in the
-separate ``joint_decoder_selection`` module.
+"""Primitives for joint causal decoder selection.
 """
 
 from __future__ import annotations

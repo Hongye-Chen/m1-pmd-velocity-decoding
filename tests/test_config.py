@@ -17,7 +17,7 @@ from neural_decoding.config import (
 
 @pytest.fixture
 def no_local_config(tmp_path: Path) -> Path:
-    """A path to a local config file that does not exist."""
+    """Return a path to a nonexistent local configuration."""
     return tmp_path / "absent-local.yaml"
 
 

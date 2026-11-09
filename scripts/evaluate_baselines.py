@@ -1,17 +1,8 @@
-"""Fit the official constant and Ridge baselines and evaluate them once on validation.
+"""Train the constant and Ridge baselines and evaluate them on validation data.
 
 Run from the repository root with the project environment active::
 
     python -m scripts.evaluate_baselines
-
-The command reads the lag and alpha frozen by the selection step, builds training and
-validation features at that lag, fits normalization once on the complete training
-set, fits a fresh constant baseline and a fresh Ridge model, and scores each once on
-validation. Nothing here is tuned: the configuration is read from disk rather than
-chosen, and the held-out split is not touched.
-
-Target eligibility uses the selected lag, the frozen rule for this and every later
-step, so all reported models are evaluated on identical validation samples.
 
 Exit codes: 0 when every check passes, 1 when a check fails, and 2 when the
 recording or the selected configuration is not available.
@@ -55,7 +46,7 @@ _CONSISTENCY_TOLERANCE = 1e-9
 
 @dataclass(frozen=True)
 class Check:
-    """One runtime-validation check against the baseline run."""
+    """Result of one baseline validation check."""
 
     name: str
     passed: bool
@@ -64,7 +55,7 @@ class Check:
 
 @dataclass(frozen=True)
 class SelectedConfiguration:
-    """The lag and alpha frozen by the selection step, read rather than chosen."""
+    """Lag and Ridge alpha chosen during model selection."""
 
     lag_ms: int
     ridge_alpha: float
@@ -106,7 +97,7 @@ def run_checks(
     written_predictions: Path,
     written_models: dict[str, Path],
 ) -> list[Check]:
-    """Validate that the official numbers were produced by the official workflow."""
+    """Validate the baseline inputs, predictions, and saved models."""
     checks: list[Check] = []
     trials = session.trials
     eligible_training = set(
@@ -335,7 +326,7 @@ def build_summary(
     checks: list[Check],
     artifacts: dict[str, str],
 ) -> dict[str, object]:
-    """Assemble the machine-readable baseline summary."""
+    """Build the baseline summary."""
     return {
         "recording": {"name": session.identity.name, "sha256": session.identity.sha256},
         "configuration": {
@@ -398,95 +389,6 @@ def build_summary(
         "all_checks_passed": all(check.passed for check in checks),
         "artifacts": artifacts,
     }
-
-
-def render_markdown(summary: dict[str, object]) -> str:
-    """Render the concise human-readable baseline summary."""
-    configuration = summary["configuration"]
-    samples = summary["samples"]
-    validation = summary["validation_metrics"]
-    training = summary["training_diagnostics"]
-
-    lines = [
-        "# Official constant and Ridge baselines",
-        "",
-        "## Validation results",
-        "",
-        "| Model | R2 x | R2 y | R2 mean | Pearson x | Pearson y | RMSE x (cm/s) | "
-        "RMSE y (cm/s) |",
-        "| --- | --- | --- | --- | --- | --- | --- | --- |",
-    ]
-    for label, name in (("Constant baseline", "constant"), ("Ridge", "ridge")):
-        entry = validation[name]
-        lines.append(
-            f"| {label} | {_number(entry['r2']['x'])} | {_number(entry['r2']['y'])} | "
-            f"**{_number(entry['r2_mean'])}** | {_number(entry['pearson_r']['x'])} | "
-            f"{_number(entry['pearson_r']['y'])} | {_number(entry['rmse_cm_s']['x'])} | "
-            f"{_number(entry['rmse_cm_s']['y'])} |"
-        )
-
-    lines += [
-        "",
-        f"Both models were evaluated once on the same {samples['validation_samples']} "
-        f"validation samples from {samples['validation_trials']} trials.",
-        "",
-        "The constant baseline predicts the mean training velocity "
-        f"({_number(summary['models']['constant_baseline']['velocity_cm_s']['x'])}, "
-        f"{_number(summary['models']['constant_baseline']['velocity_cm_s']['y'])}) cm/s "
-        "for every sample. It uses no neural data, so its correlation is undefined "
-        "rather than zero and its score is what predicting a fixed velocity earns "
-        "on this validation set.",
-        "",
-        "## Configuration",
-        "",
-        f"- Lag: **{configuration['lag_ms']} ms**, read from "
-        f"`{configuration['read_from']}`.",
-        f"- Ridge alpha: **{configuration['ridge_alpha']:g}**, read from the same file.",
-        f"- Neural history: {configuration['history_ms']} ms in "
-        f"{configuration['n_bins']} bins of {configuration['bin_ms']} ms, sampled "
-        f"every {configuration['cadence_ms']} ms.",
-        f"- Eligibility: {configuration['eligibility_rule']}.",
-        f"- Training: {samples['training_samples']} samples from "
-        f"{samples['training_trials']} trials, {samples['feature_columns']} feature "
-        f"columns over {samples['n_units']} units.",
-        "",
-        "## Procedure",
-        "",
-    ]
-    lines += [
-        f"- {key.replace('_', ' ').capitalize()}: {value}."
-        for key, value in summary["procedure"].items()
-    ]
-
-    lines += [
-        "",
-        "## Training-set fit",
-        "",
-        f"Reported for the train-to-validation gap only, not as a project result. "
-        f"Ridge mean R2 on the training set is "
-        f"{_number(training['ridge']['r2_mean'])}, against "
-        f"{_number(validation['ridge']['r2_mean'])} on validation.",
-        "",
-        "## Checks",
-        "",
-        "| Check | Result | Detail |",
-        "| --- | --- | --- |",
-    ]
-    for check in summary["checks"]:
-        lines.append(
-            f"| {check['name']} | {'pass' if check['passed'] else 'FAIL'} | "
-            f"{check['detail']} |"
-        )
-
-    lines += [
-        "",
-        f"Overall: {'all checks passed' if summary['all_checks_passed'] else 'FAILURES PRESENT'}.",
-        "",
-        "## Artifacts",
-        "",
-    ]
-    lines += [f"- `{path}`" for path in summary["artifacts"].values()]
-    return "\n".join(lines) + "\n"
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -624,12 +526,8 @@ def main(argv: list[str] | None = None) -> int:
         written_models,
     )
 
-    metrics_path = results_dir / "baseline_metrics.json"
     summary_path = results_dir / "baseline_summary.json"
-    report_path = results_dir / "baseline_summary.md"
-    artifacts["baseline_metrics"] = _repo_relative(metrics_path)
     artifacts["summary_json"] = _repo_relative(summary_path)
-    artifacts["summary_markdown"] = _repo_relative(report_path)
 
     summary = build_summary(
         session,
@@ -645,25 +543,7 @@ def main(argv: list[str] | None = None) -> int:
         artifacts,
     )
 
-    metrics_path.write_text(
-        json.dumps(
-            {
-                "split": VALIDATION,
-                "lag_ms": selection.lag_ms,
-                "ridge_alpha": selection.ridge_alpha,
-                "eligibility_lag_ms": training.eligibility_lag_ms,
-                "n_samples": validation.n_samples,
-                "n_trials": int(validation.trial_rows.size),
-                "recording_sha256": session.identity.sha256,
-                "models": metrics,
-            },
-            indent=2,
-        )
-        + "\n",
-        encoding="utf-8",
-    )
     summary_path.write_text(json.dumps(summary, indent=2) + "\n", encoding="utf-8")
-    report_path.write_text(render_markdown(summary), encoding="utf-8")
 
     _print_report(metrics, training_metrics, checks, artifacts)
     failures = [check for check in checks if not check.passed]

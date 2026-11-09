@@ -1,11 +1,4 @@
-"""Synthetic tests for the causal feature protocol and lag selection support.
-
-Every defect guarded here would raise the reported score rather than fail: a
-reversed lag, a window crossing a trial boundary, candidate lags scored on different
-target sets, or statistics fitted on an assessment fold. Bin-edge cases use the
-edges the specification computes rather than decimal literals, since ``1.15`` is not
-the same double as ``1.21 - 0.05``.
-"""
+"""Tests for causal feature construction, lag alignment, and normalization."""
 
 from __future__ import annotations
 
@@ -29,17 +22,17 @@ SAMPLE_RATE_HZ = 100.0
 
 
 def _timeline(n_samples: int) -> np.ndarray:
-    """A uniform 100 Hz timebase on exact hundredths of a second."""
+    """Return a uniform 100 Hz timebase."""
     return np.arange(n_samples, dtype=np.float64) / SAMPLE_RATE_HZ
 
 
 def _velocity(timestamps: np.ndarray) -> np.ndarray:
-    """Velocity that encodes its own timestamp, so lag errors become visible."""
+    """Encode timestamps as velocity values to expose lag errors."""
     return np.column_stack([timestamps, -2.0 * timestamps])
 
 
 def _trials(specs: list[tuple[int, float, float]], *, result: str = "R") -> pd.DataFrame:
-    """Build an eligible trial table through the production split logic."""
+    """Build an eligible trial table."""
     records = []
     for row, start, stop in specs:
         span = stop - start

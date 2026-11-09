@@ -215,7 +215,6 @@
   "artifacts": {
     "unit_manifest": "results/manifests/units.csv",
     "trial_manifest": "results/manifests/trials.csv",
-    "summary_json": "results/dataset_validation.json",
-    "summary_markdown": "results/dataset_validation.md"
+    "summary_json": "results/dataset_validation.json"
   }
 }

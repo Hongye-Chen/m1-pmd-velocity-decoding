@@ -1,11 +1,4 @@
-"""Synthetic tests that the models are fitted on training data only.
-
-Both leaks guarded here are silent and flattering: a baseline centred on the
-evaluation targets, or a Ridge model standardized with the evaluation set's own
-statistics, would raise the reported score rather than fail. The last test covers
-the saved artifacts, since a model that cannot be reloaded into identical
-predictions is not a reproducible result.
-"""
+"""Tests for constant and Ridge model fitting and serialization."""
 
 from __future__ import annotations
 
@@ -31,7 +24,7 @@ def _feature_set(
     n_trials: int = 4,
     subset_label: str | None = None,
 ) -> FeatureSet:
-    """Wrap synthetic counts and targets in a feature set with plausible identity."""
+    """Build a feature set from synthetic counts and targets."""
     n_samples = counts.shape[0]
     index = np.arange(n_samples, dtype=np.int64)
     return FeatureSet(

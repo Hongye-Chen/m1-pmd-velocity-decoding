@@ -1,4 +1,4 @@
-"""Synthetic tests for the GRU decoder and its frozen selection procedure."""
+"""Tests for GRU training, prediction, and model selection."""
 
 from __future__ import annotations
 

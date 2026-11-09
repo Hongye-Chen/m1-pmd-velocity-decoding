@@ -1,9 +1,4 @@
 """Linear decoders: the constant baseline and the Ridge model.
-
-Both refuse to fit on anything but training data, because fitting on an evaluation
-split raises the reported score instead of failing. Both predict from stored arrays
-rather than a live estimator, so the JSON artifacts reload into identical
-predictions without depending on the library versions that produced them.
 """
 
 from __future__ import annotations

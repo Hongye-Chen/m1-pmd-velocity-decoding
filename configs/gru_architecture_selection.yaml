@@ -1,18 +1,6 @@
 # Frozen GRU architecture and learning-rate selection protocol.
-#
-# Written before any architecture-search run was trained. Validation is the
-# development set for early stopping and selection; the held-out split is never
-# built. Every timing, target, normalization, optimization, device, and seed rule
-# comes unchanged from the frozen input-selection protocol below; only the layer
-# count, hidden size, learning rate, and dropout are searched. This file's SHA-256
-# is recorded with every result, so it must not change once validation metrics
-# exist.
 
 input_selection:
-  # The frozen input-selection protocol and results. Its selected history and bin
-  # width are reused, and its three runs of the baseline architecture (one layer,
-  # the protocol's hidden size and learning rate, no dropout) are reused rather
-  # than retrained.
   protocol: configs/gru_input_selection.yaml
   protocol_sha256: 2d6cbd489a70480089f2d0b547b937d705f749f8cf672f1bb2784f17ea392b64
   artifacts: results/internal/gru_input_selection
@@ -21,22 +9,14 @@ input_selection:
 search:
   hidden_sizes: [32, 64, 128]
   learning_rates: [0.001, 0.0003]
-  # Dropout acts only between stacked layers, so a one-layer GRU uses none.
   dropout_by_num_layers:
     1: [0.0]
     2: [0.0, 0.2]
 
 runs:
-  # 6 one-layer and 12 two-layer configurations, each with every seed. The three
-  # reused runs are not retrained.
   configurations: 18
   new_runs: 51
   reused_runs: 3
 
 selection:
-  # Rank each configuration by the arithmetic mean of its seed-level mean R2.
-  # Within the tolerance of the best, prefer the lower sample standard deviation
-  # (ddof=1) of those seed scores, then fewer layers, the smaller hidden size, the
-  # smaller dropout, and the smaller learning rate. The selected configuration
-  # needs a finite, strictly positive seed-mean R2 on each axis.
   tie_tolerance: 1.0e-6

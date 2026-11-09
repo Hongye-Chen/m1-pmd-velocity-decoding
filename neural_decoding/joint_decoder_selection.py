@@ -1,4 +1,4 @@
-"""Training-only orchestration for the clean-room joint decoder grid."""
+"""Training-only orchestration for the joint decoder grid."""
 
 from __future__ import annotations
 

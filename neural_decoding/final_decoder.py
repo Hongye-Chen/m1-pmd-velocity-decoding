@@ -1,9 +1,4 @@
-"""Final-fit and serialization support for the frozen clean-room decoder.
-
-The functions here do not select or tune a configuration.  They accept only the
-Step 6R winner (PVA, 50 ms width, 50 ms interval-end lag), fit it on declared
-training trial bounds, and expose a truth-isolated filtering interface for one
-official validation run.
+"""Final-fit and serialization support for the frozen decoder.
 """
 
 from __future__ import annotations
